@@ -74,11 +74,17 @@ def buyer_app():
 
         # Affichage des résultats après auto-bid
         result_rows = []
+        
+        # Récupérer l'index et l'objet acheteur final
         buyer_index = next(i for i, b in enumerate(st.session_state.buyers) if b["name"] == buyer_id)
         buyer_final = st.session_state.buyers[buyer_index]
-
+        
+        # ⚡ Récupérer les allocations finales
+        allocations, _ = solve_model(st.session_state.buyers, list(products.values()))
+        
         for pid, prod in draft_products.items():
             current_price = buyer_final["products"][pid]["current_price"]
+            qty_allocated = allocations[buyer_id][pid]  # <-- récupérer la quantité allouée ici
             result_rows.append({
                 "Produit": pid,
                 "Qté désirée": prod["qty_desired"],
@@ -86,6 +92,7 @@ def buyer_app():
                 "Prix courant (€)": current_price,
                 "Prix max (€)": prod["max_price"]
             })
-
+        
         st.subheader("Résultat enchères après Auto-bid")
         st.dataframe(result_rows)
+
