@@ -57,13 +57,25 @@ def buyer_app():
 
 
         # Ajouter le buyer courant s'il n'existe pas encore
+
         if not any(b["name"] == buyer_id for b in st.session_state.buyers):
-            st.session_state.buyers.append({
-                "name": buyer_id,
-                "products": copy.deepcopy(draft_products),
-                "auto_bid": True
-            })
-            
+            buyer_products = {}
+                for pid, p in products.items():
+                    buyer_products[pid] = {
+                        "qty_desired": draft_products[pid]["qty_desired"],
+                        "current_price": draft_products[pid]["current_price"],
+                        "max_price": draft_products[pid]["max_price"],
+                        "moq": p["seller_moq"],
+                        "volume_multiple": p["volume_multiple"],
+                        "stock": p["stock"]
+                    }
+        st.session_state.buyers.append({
+            "name": buyer_id,
+            "products": buyer_products,
+            "auto_bid": True
+        })
+
+        
         # Lancer l'auto-bid pour tous les produits
         st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
 
