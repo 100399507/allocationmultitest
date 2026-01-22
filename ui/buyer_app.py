@@ -56,44 +56,44 @@ def buyer_app():
             place_bid(buyer_id, pid, prod["qty_desired"], prod["max_price"])
 
 
-        # Ajouter le buyer courant s'il n'existe pas encore
+    # Ajouter le buyer courant s'il n'existe pas encore
 
-        if not any(b["name"] == buyer_id for b in st.session_state.buyers):
-            buyer_products = {}
-                for pid, p in products.items():
-                    buyer_products[pid] = {
-                        "qty_desired": draft_products[pid]["qty_desired"],
-                        "current_price": draft_products[pid]["current_price"],
-                        "max_price": draft_products[pid]["max_price"],
-                        "moq": p["seller_moq"],
-                        "volume_multiple": p["volume_multiple"],
-                        "stock": p["stock"]
-                    }
-        st.session_state.buyers.append({
-            "name": buyer_id,
-            "products": buyer_products,
-            "auto_bid": True
+    if not any(b["name"] == buyer_id for b in st.session_state.buyers):
+        buyer_products = {}
+            for pid, p in products.items():
+                buyer_products[pid] = {
+                    "qty_desired": draft_products[pid]["qty_desired"],
+                    "current_price": draft_products[pid]["current_price"],
+                    "max_price": draft_products[pid]["max_price"],
+                    "moq": p["seller_moq"],
+                    "volume_multiple": p["volume_multiple"],
+                    "stock": p["stock"]
+                }
+    st.session_state.buyers.append({
+        "name": buyer_id,
+        "products": buyer_products,
+        "auto_bid": True
+    })
+
+    
+    # Lancer l'auto-bid pour tous les produits
+    st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
+
+
+    st.success("Enchères placées pour tous les produits")
+
+
+
+    # Affichage des résultats après auto-bid
+    result_rows = []
+    for pid, prod in draft_products.items():
+        current_price = st.session_state.buyers[-1]["products"][pid]["current_price"]
+        result_rows.append({
+            "Produit": pid,
+            "Qté désirée": prod["qty_desired"],
+            "Prix courant (€)": current_price,
+            "Prix max (€)": prod["max_price"]
         })
 
-        
-        # Lancer l'auto-bid pour tous les produits
-        st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
-
-
-        st.success("Enchères placées pour tous les produits")
-
-
-
-        # Affichage des résultats après auto-bid
-        result_rows = []
-        for pid, prod in draft_products.items():
-            current_price = st.session_state.buyers[-1]["products"][pid]["current_price"]
-            result_rows.append({
-                "Produit": pid,
-                "Qté désirée": prod["qty_desired"],
-                "Prix courant (€)": current_price,
-                "Prix max (€)": prod["max_price"]
-            })
-
-        st.subheader("Résultat enchères après Auto-bid")
-        st.dataframe(result_rows)
+    st.subheader("Résultat enchères après Auto-bid")
+    st.dataframe(result_rows)
