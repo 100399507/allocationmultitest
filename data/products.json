@@ -9,8 +9,8 @@
     "bids": {}
   },
   "P2": {
-    "id": "Velouté fruix 12X125G",
-    "name": "Produit 2",
+    "id": "P2",
+    "name": "Velouté fruix 12X125G",
     "stock": 300,
     "volume_multiple": 20,
     "starting_price": 10.0,
