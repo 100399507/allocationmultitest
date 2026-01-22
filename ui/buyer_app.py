@@ -3,6 +3,9 @@ from services.state_manager import load_json
 from services.bid_service import place_bid
 from core.allocation_algo import run_auto_bid_aggressive
 
+if "buyers" not in st.session_state:
+st.session_state.buyers = []
+
 def buyer_app():
     st.title("🛒 Interface Acheteur")
 
