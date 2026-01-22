@@ -82,6 +82,7 @@ def buyer_app():
             result_rows.append({
                 "Produit": pid,
                 "Qté désirée": prod["qty_desired"],
+                "Qté allouée": qty_allocated, 
                 "Prix courant (€)": current_price,
                 "Prix max (€)": prod["max_price"]
             })
