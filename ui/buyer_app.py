@@ -2,7 +2,7 @@ import streamlit as st
 import copy
 from core.auto_bid import run_auto_bid_aggressive
 from core.allocation_algo import solve_model
-from core.recommendation import simulate_optimal_bid
+from core.recommendation_algo import simulate_optimal_bid
 from services.state_manager import load_products
 
 # -----------------------------
