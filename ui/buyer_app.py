@@ -136,52 +136,68 @@ def buyer_app():
     
             st.subheader("💡 Recommandation prix pour obtenir 100% du stock")
             st.dataframe(rec_rows)
-
-        # -----------------------------
-        # Bouton simulation + recommandation
-        # -----------------------------
-        # Affichage des résultats après auto-bid
-
-        result_rows = []
-        
-        # Récupérer l'index et l'objet acheteur final
-        buyer_final = next((b for b in st.session_state.buyers if b["name"] == buyer_id), None)
-        
-        if buyer_final is None:
-            st.warning("Il n'y a pas encore d'acheteurs.")
+    
+    # -----------------------------
+    # Bouton simulation + recommandation
+    # -----------------------------
+    if st.button("🧪 Simuler mon allocation et recommandation"):
+        if not buyer_id:
+            st.warning("Il n'y a pas encore d'acheteurs")
         else:
-            # ⚡ Récupérer les allocations finales
-            allocations, _ = solve_model(st.session_state.buyers, list(products.values()))
-        
-            result_rows = []
+            # Copier les acheteurs existants pour ne pas toucher aux originaux
+            buyers_copy = copy.deepcopy(st.session_state.buyers)
+    
+            # Créer un buyer temporaire pour simulation uniquement
+            temp_buyer = {
+                "name": "__SIMULATION__",
+                "auto_bid": True,
+                "products": copy.deepcopy(draft_products)
+            }
+            buyers_copy.append(temp_buyer)
+    
+            # Lancer auto-bid sur copie
+            buyers_simulated = run_auto_bid_aggressive(buyers_copy, list(products.values()), max_rounds=30)
+    
+            # ⚡ Récupérer allocations simulées
+            allocations, _ = solve_model(buyers_simulated, list(products.values()))
+            sim_alloc = allocations["__SIMULATION__"]
+    
+            # Affichage allocations simulées
+            sim_rows = []
             for pid, prod in draft_products.items():
-                current_price = buyer_final["products"][pid]["current_price"]
-                qty_allocated = allocations[buyer_id][pid]  # quantité allouée
-                result_rows.append({
+                sim_rows.append({
                     "Produit": pid,
                     "Qté désirée": prod["qty_desired"],
-                    "Qté allouée": qty_allocated,
-                    "Prix courant (€)": current_price,
+                    "Qté allouée": sim_alloc.get(pid, 0),
+                    "Prix courant simulé (€)": buyers_simulated[-1]["products"][pid]["current_price"],
                     "Prix max (€)": prod["max_price"]
                 })
-            st.subheader("Résultat enchères après Auto-bid")
-            st.dataframe(result_rows)
-
-        
-        # ⚡ Récupérer les allocations finales
-        allocations, _ = solve_model(st.session_state.buyers, list(products.values()))
-        
-        for pid, prod in draft_products.items():
-            current_price = buyer_final["products"][pid]["current_price"]
-            qty_allocated = allocations[buyer_id][pid]  # <-- récupérer la quantité allouée ici
-            result_rows.append({
-                "Produit": pid,
-                "Qté désirée": prod["qty_desired"],
-                "Qté allouée": qty_allocated, 
-                "Prix courant (€)": current_price,
-                "Prix max (€)": prod["max_price"]
-            })
-        
-        st.subheader("Résultat enchères après Auto-bid")
-        st.dataframe(result_rows)
-
+            st.subheader("🧪 Résultat simulation allocation")
+            st.dataframe(sim_rows)
+    
+            # -----------------------------
+            # Recommandations prix pour obtenir 100% du stock
+            # -----------------------------
+            from recommendation import simulate_optimal_bid
+    
+            user_qtys = {pid: prod["qty_desired"] for pid, prod in draft_products.items()}
+            user_prices = {pid: prod["current_price"] for pid, prod in draft_products.items()}
+    
+            recs = simulate_optimal_bid(
+                st.session_state.buyers,  # on simule l'impact sur les autres acheteurs réels
+                list(products.values()),
+                user_qtys=user_qtys,
+                user_prices=user_prices,
+                new_buyer_name="__SIMULATION__"
+            )
+    
+            rec_rows = []
+            for pid, rec in recs.items():
+                rec_rows.append({
+                    "Produit": pid,
+                    "Prix recommandé pour 100% allocation (€)": rec["recommended_price"]
+                })
+    
+            st.subheader("💡 Recommandation prix pour obtenir 100% du stock")
+            st.dataframe(rec_rows)
+    
