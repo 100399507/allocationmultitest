@@ -77,7 +77,7 @@ def buyer_app():
     # -----------------------------
     if st.button("🧪 Simuler mon allocation et recommandation"):
         if not buyer_id:
-            st.warning("Il n'y a pas encore d'acheteurs")
+            st.warning("Renseigne d'abord ton identifiant acheteur")
         else:
             # Copier les acheteurs existants pour ne pas toucher aux originaux
             buyers_copy = copy.deepcopy(st.session_state.buyers)
@@ -113,7 +113,7 @@ def buyer_app():
             # -----------------------------
             # Recommandations prix pour obtenir 100% du stock
             # -----------------------------
-            from recommendation import simulate_optimal_bid
+            from core.recommendation import simulate_optimal_bid
     
             user_qtys = {pid: prod["qty_desired"] for pid, prod in draft_products.items()}
             user_prices = {pid: prod["current_price"] for pid, prod in draft_products.items()}
@@ -135,4 +135,4 @@ def buyer_app():
     
             st.subheader("💡 Recommandation prix pour obtenir 100% du stock")
             st.dataframe(rec_rows)
-    
+
