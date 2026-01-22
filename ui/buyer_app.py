@@ -145,8 +145,28 @@ def buyer_app():
         result_rows = []
         
         # Récupérer l'index et l'objet acheteur final
-        buyer_index = next(i for i, b in enumerate(st.session_state.buyers) if b["name"] == buyer_id)
-        buyer_final = st.session_state.buyers[buyer_index]
+        buyer_final = next((b for b in st.session_state.buyers if b["name"] == buyer_id), None)
+        
+        if buyer_final is None:
+            st.warning("Il n'y a pas encore d'acheteurs.")
+        else:
+            # ⚡ Récupérer les allocations finales
+            allocations, _ = solve_model(st.session_state.buyers, list(products.values()))
+        
+            result_rows = []
+            for pid, prod in draft_products.items():
+                current_price = buyer_final["products"][pid]["current_price"]
+                qty_allocated = allocations[buyer_id][pid]  # quantité allouée
+                result_rows.append({
+                    "Produit": pid,
+                    "Qté désirée": prod["qty_desired"],
+                    "Qté allouée": qty_allocated,
+                    "Prix courant (€)": current_price,
+                    "Prix max (€)": prod["max_price"]
+                })
+            st.subheader("Résultat enchères après Auto-bid")
+            st.dataframe(result_rows)
+
         
         # ⚡ Récupérer les allocations finales
         allocations, _ = solve_model(st.session_state.buyers, list(products.values()))
