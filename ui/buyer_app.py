@@ -114,7 +114,7 @@ def buyer_app():
             st.dataframe(sim_rows)
     
             # Recommandations prix pour 100% allocation
-            from allocation_recommendation import simulate_optimal_bid
+            from recommendation import simulate_optimal_bid
     
             user_qtys = {pid: prod["qty_desired"] for pid, prod in draft_products.items()}
             user_prices = {pid: prod["current_price"] for pid, prod in draft_products.items()}
