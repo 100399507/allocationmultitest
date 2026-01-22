@@ -46,33 +46,6 @@ def buyer_app():
         }
 
     # -----------------------------
-    # Bouton unique pour tous les produits
-    # -----------------------------
-    if st.button("💰 Placer l’enchère pour tous les produits"):
-        # Ajouter le buyer courant s'il n'existe pas encore
-        if not any(b["name"] == buyer_id for b in st.session_state.buyers):
-            st.session_state.buyers.append({
-                "name": buyer_id,
-                "products": copy.deepcopy(draft_products),
-                "auto_bid": True
-            })
-        else:
-            # Mettre à jour les valeurs si déjà présent
-            for b in st.session_state.buyers:
-                if b["name"] == buyer_id:
-                    b["products"] = copy.deepcopy(draft_products)
-                    b["auto_bid"] = True
-
-        # Placer les enchères (optionnel si tu as une fonction place_bid par produit)
-        for pid, prod in draft_products.items():
-            place_bid(buyer_id, pid, prod["qty_desired"], prod["max_price"])
-
-        # Lancer l'auto-bid pour tous les buyers
-        st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
-
-        st.success("Enchères placées et auto-bid lancé pour tous les produits")
-    
-    # -----------------------------
     # Bouton simulation + recommandation
     # -----------------------------
     if st.button("🧪 Simuler mon allocation et recommandation"):
@@ -135,4 +108,31 @@ def buyer_app():
     
             st.subheader("💡 Recommandation prix pour obtenir 100% du stock")
             st.dataframe(rec_rows)
+            
+    # -----------------------------
+    # Bouton unique pour tous les produits
+    # -----------------------------
+    if st.button("💰 Placer l’enchère pour tous les produits"):
+        # Ajouter le buyer courant s'il n'existe pas encore
+        if not any(b["name"] == buyer_id for b in st.session_state.buyers):
+            st.session_state.buyers.append({
+                "name": buyer_id,
+                "products": copy.deepcopy(draft_products),
+                "auto_bid": True
+            })
+        else:
+            # Mettre à jour les valeurs si déjà présent
+            for b in st.session_state.buyers:
+                if b["name"] == buyer_id:
+                    b["products"] = copy.deepcopy(draft_products)
+                    b["auto_bid"] = True
 
+        # Placer les enchères (optionnel si tu as une fonction place_bid par produit)
+        for pid, prod in draft_products.items():
+            place_bid(buyer_id, pid, prod["qty_desired"], prod["max_price"])
+
+        # Lancer l'auto-bid pour tous les buyers
+        st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
+
+        st.success("Enchères placées et auto-bid lancé pour tous les produits")
+    
