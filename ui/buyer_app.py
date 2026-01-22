@@ -102,7 +102,7 @@ def buyer_app():
             rec_rows = []
             for pid, rec in recs.items():
                 rec_rows.append({
-                    "Produit": pname,
+                    "Produit": products[pid]["name"],
                     "Prix recommandé pour 100% allocation (€)": rec["recommended_price"]
                 })
     
