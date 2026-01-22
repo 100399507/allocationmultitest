@@ -3,13 +3,15 @@ from services.state_manager import load_json
 from services.bid_service import place_bid
 from core.allocation_algo import run_auto_bid_aggressive
 
-# Session state
-# -----------------------------
-if "buyers" not in st.session_state:
-    st.session_state.buyers = []
 
 def buyer_app():
     st.title("🛒 Interface Acheteur")
+
+    # Session state
+    # -----------------------------
+    if "buyers" not in st.session_state:
+        st.session_state.buyers = []
+
 
     # Charger les produits
     products = load_json("products.json")
@@ -53,11 +55,6 @@ def buyer_app():
         for pid, prod in draft_products.items():
             place_bid(buyer_id, pid, prod["qty_desired"], prod["max_price"])
 
-        # Lancer l'auto-bid pour tous les produits
-        st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
-
-
-        st.success("Enchères placées pour tous les produits")
 
         # Ajouter le buyer courant s'il n'existe pas encore
         if not any(b["name"] == buyer_id for b in st.session_state.buyers):
@@ -66,6 +63,13 @@ def buyer_app():
                 "products": copy.deepcopy(draft_products),
                 "auto_bid": True
             })
+            
+        # Lancer l'auto-bid pour tous les produits
+        st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
+
+
+        st.success("Enchères placées pour tous les produits")
+
 
 
         # Affichage des résultats après auto-bid
