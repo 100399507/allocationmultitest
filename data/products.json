@@ -1,7 +1,7 @@
 {
   "P1": {
     "id": "P1",
-    "name": "Produit 1",
+    "name": "Danone Nature 16X125G",
     "stock": 500,
     "volume_multiple": 10,
     "starting_price": 5.0,
@@ -9,7 +9,7 @@
     "bids": {}
   },
   "P2": {
-    "id": "P2",
+    "id": "Velouté fruix 12X125G",
     "name": "Produit 2",
     "stock": 300,
     "volume_multiple": 20,
