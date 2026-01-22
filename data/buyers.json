@@ -1,0 +1,7 @@
+{
+  "buyer_A": {
+    "id": "buyer_A",
+    "name": "Acheteur A",
+    "auto_bid": true
+  }
+}

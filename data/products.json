@@ -1,0 +1,20 @@
+{
+  "P1": {
+    "id": "P1",
+    "name": "Produit 1",
+    "stock": 500,
+    "volume_multiple": 10,
+    "starting_price": 5.0,
+    "seller_moq": 50,
+    "bids": {}
+  },
+  "P2": {
+    "id": "P2",
+    "name": "Produit 2",
+    "stock": 300,
+    "volume_multiple": 20,
+    "starting_price": 10.0,
+    "seller_moq": 80,
+    "bids": {}
+  }
+}
