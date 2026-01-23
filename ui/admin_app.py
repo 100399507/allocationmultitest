@@ -5,6 +5,13 @@ from services.state_manager import load_json, save_json
 def admin_app():
     st.title("🛠️ Interface Admin")
 
+    from services.bid_service import reset_bid_history
+
+        # Bouton pour réinitialiser l'historique
+        if st.button("⚠️ Réinitialiser l'historique des enchères"):
+            reset_bid_history()
+            st.success("Le fichier bid_history.json a été remis à zéro ✅")
+
     products = load_json("products.json")
     buyers = load_json("buyers.json")
 
