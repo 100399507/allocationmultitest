@@ -16,6 +16,9 @@ def buyer_app():
     products = load_json("products.json")
     buyer_id = st.text_input("Votre identifiant acheteur", "buyer_A")
 
+    #Charger les historiques d'enchères
+    history = load_json("bids_history.json")
+
     # -----------------------------
     # Cadre récapitulatif des produits
     # -----------------------------
@@ -23,12 +26,20 @@ def buyer_app():
     st.subheader("📝 Informations sur les produits (cliquer pour afficher)")
     product_summary = []
     for pid, p in products.items():
+        # Chercher le prix max actuel pour ce produit
+        product_history = [h for h in history if h["product"] == pid]
+        if product_history:
+            # max des prix finaux alloués ou courants
+            current_price = max(h["final_price"] for h in product_history)
+        else:
+            current_price = p["starting_price"]
+            
         product_summary.append({
             "Produit": p["name"],
             "Stock total": p["stock"],
             "MOQ": p["seller_moq"],
             "Volume multiple": p["volume_multiple"],
-            "Prix de départ (€)": round(p["starting_price"])
+            "Prix de départ (€)": round(current_price)
         })
     
     st.table(pd.DataFrame(product_summary))
@@ -43,7 +54,18 @@ def buyer_app():
     
     for pid, p in products.items():
         st.subheader(p["name"])
-        st.metric("Prix de départ", f"{p['starting_price']} €")
+
+        # prix de départ dynamique
+        if history:
+            product_history = [h for h in history if h["product"] == pid]
+            if product_history:
+                starting_price = max(h["final_price"] for h in product_history)
+            else:
+                starting_price = p["starting_price"]
+        else:
+            starting_price = p["starting_price"]
+
+        st.metric("Prix de départ", f"{starting_price:.0f} €")
 
         qty = st.number_input(
             "Quantité désirée",
