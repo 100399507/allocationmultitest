@@ -56,58 +56,53 @@ def seller_app():
         # Option : afficher un graphique
         st.line_chart(df_ca_global.set_index("short_date")["ca"])
 
+   # -----------------------------
+    # Enchères en cours : tous produits
     # -----------------------------
-    # Affichage détaillé produit par produit
-    # -----------------------------
+    st.subheader("**📊 Enchères en cours (tous produits)**")
+    rows = []
     for pid, p in products.items():
-        st.subheader(p["name"])
-
-        # Enchères en cours : derniers allocataires
-        st.markdown("**📊 Enchères en cours (acheteurs avec allocation)**")
         product_history = [h for h in history if h["product"] == pid]
-
         if product_history:
             latest_time = max(h["timestamp"] for h in product_history)
             last_allocations = [
                 h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0
             ]
+            for h in last_allocations:
+                rows.append({
+                    "Produit": p["name"],
+                    "Acheteur": h["buyer"],
+                    "Qté allouée": h["qty_allocated"],
+                    "Prix final (€)": h["final_price"],
+                    "Qté demandée": h["qty_desired"],
+                    "Prix max (€)": h["max_price"],
+                    "Chiffre d'affaires (€)": h["final_price"] * h["qty_allocated"],
+                    "Date": h["timestamp"]
+                })
+    if rows:
+        st.dataframe(pd.DataFrame(rows))
+    else:
+        st.info("Aucun acheteur avec allocation pour le moment")
 
-            if last_allocations:
-                rows = []
-                total_ca_product = 0
-                for h in last_allocations:
-                    ca = h["final_price"] * h["qty_allocated"]
-                    total_ca_product += ca
-                    rows.append({
-                        "Acheteur": h["buyer"],
-                        "Qté allouée": h["qty_allocated"],
-                        "Prix final (€)": h["final_price"],
-                        "Qté demandée": h["qty_desired"],
-                        "Prix max (€)": h["max_price"],
-                        "Chiffre d'affaires (€)": ca,
-                        "Date": h["timestamp"]
-                    })
-
-                st.dataframe(pd.DataFrame(rows))
-                st.markdown(f"**💰 Chiffre d'affaires total pour ce produit : {total_ca_product:.2f} €**")
-            else:
-                st.info("Aucun acheteur avec allocation pour ce produit")
+    # -----------------------------
+    # Historique complet : tous produits
+    # -----------------------------
+    with st.expander("📜 Historique complet des enchères (tous produits)"):
+        hist_rows = []
+        for pid, p in products.items():
+            product_history = [h for h in history if h["product"] == pid]
+            for h in product_history:
+                hist_rows.append({
+                    "Produit": p["name"],
+                    "Acheteur": h["buyer"],
+                    "Qté demandée": h["qty_desired"],
+                    "Qté allouée": h["qty_allocated"],
+                    "Prix final (€)": h["final_price"],
+                    "Prix max (€)": h["max_price"],
+                    "Date": h["timestamp"],
+                    "Chiffre d'affaires (€)": h["final_price"] * h["qty_allocated"]
+                })
+        if hist_rows:
+            st.dataframe(pd.DataFrame(hist_rows))
         else:
-            st.info("Aucune allocation pour ce produit")
-
-        # Historique détaillé dans un expander
-        with st.expander("📜 Historique des enchères (cliquer pour afficher)"):
-            if product_history:
-                hist_rows = []
-                for h in product_history:
-                    hist_rows.append({
-                        "Acheteur": h["buyer"],
-                        "Qté demandée": h["qty_desired"],
-                        "Qté allouée": h["qty_allocated"],
-                        "Prix final (€)": h["final_price"],
-                        "Prix max (€)": h["max_price"],
-                        "Date": h["timestamp"]
-                    })
-                st.dataframe(pd.DataFrame(hist_rows))
-            else:
-                st.info("Aucun historique pour ce produit")
+            st.info("Aucun historique d'enchères")
