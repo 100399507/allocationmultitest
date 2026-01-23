@@ -57,7 +57,7 @@ def seller_app():
             st.info("Aucun historique pour ce produit")
 
 
-from services.bid_history_service import reset_bid_history
+from services.bid_service import reset_bid_history
 
 # Bouton pour réinitialiser l'historique
 if st.button("⚠️ Réinitialiser l'historique des enchères"):
