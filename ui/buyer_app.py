@@ -22,29 +22,29 @@ def buyer_app():
     # -----------------------------
     # Cadre récapitulatif des produits
     # -----------------------------
-    #with st.expander("📝 Informations sur les produits (cliquer pour afficher)"):
-    st.subheader("📝 Informations sur les produits (cliquer pour afficher)")
-    product_summary = []
-    for pid, p in products.items():
-        
-        # Chercher le prix max actuel pour ce produit
-        product_history = [h for h in history if h["product"] == pid]
-        if product_history:
-            # max des prix finaux alloués ou courants
-            current_price = max(h["final_price"] for h in product_history)
-        else:
-            current_price = p["starting_price"]
+
+    with st.expander("📝 Informations sur les produits (cliquer pour afficher)", expanded=True):
+        product_summary = []
+        for pid, p in products.items():
             
-        product_summary.append({
-            "Produit": p["name"],
-            "Stock total": p["stock"],
-            "MOQ": p["seller_moq"],
-            "Volume multiple": p["volume_multiple"],
-            "Prix de départ (€)": f"{current_price:.2f}"
-        })
-    
-    st.table(pd.DataFrame(product_summary))
-    st.info("Minimum de commande tout produit avant et après allocation : 80")
+            # Chercher le prix max actuel pour ce produit
+            product_history = [h for h in history if h["product"] == pid]
+            if product_history:
+                # max des prix finaux alloués ou courants
+                current_price = max(h["final_price"] for h in product_history)
+            else:
+                current_price = p["starting_price"]
+                
+            product_summary.append({
+                "Produit": p["name"],
+                "Stock total": p["stock"],
+                "MOQ": p["seller_moq"],
+                "Volume multiple": p["volume_multiple"],
+                "Prix de départ (€)": f"{current_price:.2f}"
+            })
+        
+        st.table(pd.DataFrame(product_summary))
+        st.info("Minimum de commande tout produit avant et après allocation : 80")
 
     # -----------------------------
     # Créer un "draft" temporaire des entrées de l'acheteur
