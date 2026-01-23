@@ -11,6 +11,12 @@ def seller_app():
     #Pour calcul du CA global
     total_ca_all_products = 0
 
+    # -----------------------------
+    # Chiffre d'affaires total global
+    # -----------------------------
+    st.markdown(f"## 💵 Chiffre d'affaires total tous produits : {total_ca_all_products:.2f} €")
+
+
     for pid, p in products.items():
         st.subheader(p["name"])
 
@@ -58,11 +64,6 @@ def seller_app():
                 st.info("Aucun acheteur avec allocation pour ce produit")
         else:
             st.info("Aucune allocation pour ce produit")
-
-        # -----------------------------
-        # Chiffre d'affaires total global
-        # -----------------------------
-        st.markdown(f"## 💵 Chiffre d'affaires total tous produits : {total_ca_all_products:.2f} €")
 
 
         # -----------------------------
