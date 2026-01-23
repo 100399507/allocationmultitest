@@ -26,7 +26,8 @@ def seller_app():
                 })
             
             st.table(pd.DataFrame(product_summary))
-            st.info("Aucune enchère dans l'historique")
+        
+        st.info("Aucune enchère dans l'historique")
         return
 
     # -----------------------------
