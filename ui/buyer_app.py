@@ -56,7 +56,7 @@ def buyer_app():
     
     for pid, p in products.items():
         #st.metric(p["name"])
-        st.markdown("<span style='font-size:18px; font-weight:bold'>p["name"]</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size:16px; font-weight:bold'>{p['name']}</span>", unsafe_allow_html=True)
 
     
         col1, col2, col3 = st.columns([1, 1, 1])
