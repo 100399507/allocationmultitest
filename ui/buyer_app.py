@@ -55,12 +55,14 @@ def buyer_app():
     
     
     for pid, p in products.items():
-        st.markdown(f"<span style='font-size:16px; font-weight:bold'>{p['name']}</span>", unsafe_allow_html=True)
 
-        col1, col2 = st.columns([1, 1])
+        col1, col2, col3 = st.columns([1, 1, 1])
         
         # prix max
         with col1:
+            st.markdown(f"<span style='font-size:16px; font-weight:bold'>{p['name']}</span>", unsafe_allow_html=True)
+            
+        with col2:
             # prix de départ dynamique
             if history:
                 history = load_json("bids_history.json")
@@ -81,7 +83,7 @@ def buyer_app():
             st.caption(f"Prix de départ : {starting_price:.2f} €")
 
         # quantité désirée
-        with col2:
+        with col3:
             qty = st.number_input(
             "Quantité désirée",
             min_value=p["seller_moq"],
@@ -89,7 +91,7 @@ def buyer_app():
             step=p["volume_multiple"],
             key=f"qty_{pid}"
             )
-            st.caption(f"Quantité min : {p["seller_moq"]} & Quantité max : {p["stock"]}")
+            st.caption(f"Min : {p["seller_moq"]} / Max : {p["stock"]} / Multiple : {p["volume_multiple"]}")
         
         # Vérification du multiple
         if qty % p["volume_multiple"] != 0:
