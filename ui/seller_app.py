@@ -55,3 +55,12 @@ def seller_app():
             st.dataframe(pd.DataFrame(hist_rows))
         else:
             st.info("Aucun historique pour ce produit")
+
+
+from services.bid_history_service import reset_bid_history
+
+# Bouton pour réinitialiser l'historique
+if st.button("⚠️ Réinitialiser l'historique des enchères"):
+    reset_bid_history()
+    st.success("Le fichier bid_history.json a été remis à zéro ✅")
+
