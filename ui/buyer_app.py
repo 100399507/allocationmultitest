@@ -30,6 +30,11 @@ def buyer_app():
             step=p["volume_multiple"],
             key=f"qty_{pid}"
         )
+        
+        # Vérification du multiple
+        if qty % p["volume_multiple"] != 0:
+            st.warning(f"La quantité doit être un multiple de {p['volume_multiple']}.")
+            
         max_price = st.number_input(
             "Prix max",
             min_value=p["starting_price"],
