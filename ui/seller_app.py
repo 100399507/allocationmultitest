@@ -3,7 +3,7 @@ import pandas as pd
 from services.state_manager import load_json
 
 def seller_app():
-    st.title("📦 Interface Vendeur")
+    st.title("Dashboard Vendeur")
 
     products = load_json("products.json")
     history = load_json("bids_history.json")
@@ -11,6 +11,25 @@ def seller_app():
     if not history:
         st.info("Aucune enchère dans l'historique")
         return
+
+    # -----------------------------
+    # Cadre récapitulatif des produits
+    # -----------------------------
+    with st.expander("📝 Informations sur les produits (cliquer pour afficher)"):
+    
+        product_summary = []
+        for pid, p in products.items():
+            product_summary.append({
+                "Produit": p["name"],
+                "Stock total": p["stock"],
+                "MOQ": p["seller_moq"],
+                "Volume multiple": p["volume_multiple"],
+                "Prix de départ (€)": p["starting_price"]
+            })
+        
+        st.table(pd.DataFrame(product_summary))  # ou st.dataframe si tu veux filtrer/trier
+
+    st.markdown("---")  # séparateur visuel
 
 
     # -----------------------------
