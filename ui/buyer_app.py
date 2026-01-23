@@ -91,7 +91,8 @@ def buyer_app():
             step=p["volume_multiple"],
             key=f"qty_{pid}"
             )
-            st.caption(f"Min : {p["seller_moq"]}   Max : {p["stock"]}   Multiple : {p["volume_multiple"]}")
+            st.caption(f"Min : {p['seller_moq']}   Max : {p['stock']}   Multiple : {p['volume_multiple']}")
+
         
         # Vérification du multiple
         if qty % p["volume_multiple"] != 0:
@@ -120,6 +121,10 @@ def buyer_app():
     # -----------------------------
     # Bouton simulation + recommandation
     # -----------------------------
+    
+    #Passage par un state, sinon rerun et le bouton disparait
+    if "sim_alloc" not in st.session_state:
+    st.session_state.sim_alloc = {}  # dictionnaire vide au départ
 
     if st.button("🧪 Simuler mon allocation et recommandation", disabled=not valid_input):
         if not buyer_id:
@@ -138,21 +143,27 @@ def buyer_app():
     
             # Lancer auto-bid sur copie
             buyers_simulated = run_auto_bid_aggressive(buyers_copy, list(products.values()), max_rounds=30)
-    
-            # ⚡ Récupérer allocations simulées
+
+            # Récupérer allocations simulées
             allocations, _ = solve_model(buyers_simulated, list(products.values()))
             sim_alloc = allocations["__SIMULATION__"]
+            
+            # Stocker dans le session_state
+            st.session_state.sim_alloc = sim_alloc
+
     
             # Affichage allocations simulées
-            sim_rows = []
-            for pid, prod in draft_products.items():
-                sim_rows.append({
-                    "Produit": pid,
-                    "Qté désirée": prod["qty_desired"],
-                    "Qté allouée": sim_alloc.get(pid, 0),
-                    "Prix courant simulé (€)": buyers_simulated[-1]["products"][pid]["current_price"],
-                    "Prix max (€)": prod["max_price"]
-                })
+            if st.session_state.sim_alloc:
+                sim_rows = []
+                for pid, prod in draft_products.items():
+                    sim_rows.append({
+                        "Produit": pid,
+                        "Qté désirée": prod["qty_desired"],
+                        "Qté allouée": st.session_state.sim_alloc.get(pid, 0),
+                        "Prix courant simulé (€)": buyers_simulated[-1]["products"][pid]["current_price"],
+                        "Prix max (€)": prod["max_price"]
+                    })
+            
             st.subheader("🧪 Résultat simulation allocation")
             st.dataframe(sim_rows)
     
