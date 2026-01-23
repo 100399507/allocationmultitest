@@ -10,6 +10,22 @@ def seller_app():
 
     if not history:
         st.info("Aucune enchère dans l'historique")
+        # -----------------------------
+        # Cadre récapitulatif des produits
+        # -----------------------------
+        with st.expander("📝 Informations sur les produits (cliquer pour afficher)"):
+        
+            product_summary = []
+            for pid, p in products.items():
+                product_summary.append({
+                    "Produit": p["name"],
+                    "Stock total": p["stock"],
+                    "MOQ": p["seller_moq"],
+                    "Volume multiple": p["volume_multiple"],
+                    "Prix de départ (€)": round(p["starting_price"])
+                })
+            
+            st.table(pd.DataFrame(product_summary))  
         return
 
     # -----------------------------
@@ -27,7 +43,7 @@ def seller_app():
                 "Prix de départ (€)": round(p["starting_price"])
             })
         
-        st.table(pd.DataFrame(product_summary))  # ou st.dataframe si tu veux filtrer/trier
+        st.table(pd.DataFrame(product_summary))  
 
     st.markdown("---")  # séparateur visuel
 
