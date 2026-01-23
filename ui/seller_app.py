@@ -20,12 +20,15 @@ def seller_app():
     df_ca_global = df.groupby("timestamp")["ca"].sum().reset_index()
     df_ca_global = df_ca_global.sort_values("timestamp")
 
+    # Raccourcir la date pour lisibilité
+    df_ca_global["short_date"] = pd.to_datetime(df_ca_global["timestamp"]).dt.strftime("%d/%m %H:%M")
+
     # Afficher le tableau
     st.subheader("📈 Évolution du chiffre d'affaires global (tous produits)")
     st.dataframe(df_ca_global)
 
     # Option : afficher un graphique
-    st.line_chart(df_ca_global.set_index("timestamp")["ca"])
+    st.area_chart(df_ca_global.set_index("short_date")["ca"])
 
     
     # -----------------------------
