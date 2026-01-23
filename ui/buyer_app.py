@@ -1,5 +1,6 @@
 import streamlit as st
 import copy
+import pandas as pd
 from services.state_manager import load_json
 from services.bid_service import save_final_allocations
 from core.allocation_algo import run_auto_bid_aggressive, solve_model
