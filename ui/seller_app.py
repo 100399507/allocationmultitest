@@ -12,29 +12,7 @@ def seller_app():
         st.info("Aucune enchère dans l'historique")
         return
 
-    # -----------------------------
-    # Transformer en DataFrame
-    # -----------------------------
-    df = pd.DataFrame(history)
 
-    # Calcul du chiffre d'affaires par ligne
-    df["ca"] = df["final_price"] * df["qty_allocated"]
-
-    # Grouper par timestamp pour obtenir le CA global par round
-    df_ca_global = df.groupby("timestamp")["ca"].sum().reset_index()
-    df_ca_global = df_ca_global.sort_values("timestamp")
-
-    # Raccourcir la date pour lisibilité
-    df_ca_global["short_date"] = pd.to_datetime(df_ca_global["timestamp"]).dt.strftime("%d/%m %H:%M")
-
-    # Afficher le tableau
-    st.subheader("📈 Évolution du chiffre d'affaires global (tous produits)")
-    st.dataframe(df_ca_global)
-
-    # Option : afficher un graphique
-    st.line_chart(df_ca_global.set_index("short_date")["ca"])
-
-    
     # -----------------------------
     # Calculer le CA global avant affichage
     # -----------------------------
@@ -54,6 +32,29 @@ def seller_app():
     # -----------------------------
     st.markdown(f"## 💵 Chiffre d'affaires total : {total_ca_all_products:.2f} €")
     st.markdown("---")  # séparateur visuel
+
+    # -----------------------------
+    # Affichage du chiffre d'affaires global
+    # -----------------------------
+    with st.expander("📈 Évolution du chiffre d'affaires global  (cliquer pour afficher)"):
+        df = pd.DataFrame(history)
+    
+        # Calcul du chiffre d'affaires par ligne
+        df["ca"] = df["final_price"] * df["qty_allocated"]
+    
+        # Grouper par timestamp pour obtenir le CA global par round
+        df_ca_global = df.groupby("timestamp")["ca"].sum().reset_index()
+        df_ca_global = df_ca_global.sort_values("timestamp")
+    
+        # Raccourcir la date pour lisibilité
+        df_ca_global["short_date"] = pd.to_datetime(df_ca_global["timestamp"]).dt.strftime("%d/%m %H:%M")
+    
+        # Afficher le tableau
+        #st.subheader("📈 Évolution du chiffre d'affaires global (tous produits)")
+        st.dataframe(df_ca_global)
+    
+        # Option : afficher un graphique
+        st.line_chart(df_ca_global.set_index("short_date")["ca"])
 
     # -----------------------------
     # Affichage détaillé produit par produit
