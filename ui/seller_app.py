@@ -28,7 +28,7 @@ def seller_app():
     st.dataframe(df_ca_global)
 
     # Option : afficher un graphique
-    st.area_chart(df_ca_global.set_index("short_date")["ca"])
+    st.line_chart(df_ca_global.set_index("short_date")["ca"])
 
     
     # -----------------------------
