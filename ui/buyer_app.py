@@ -79,7 +79,8 @@ def buyer_app():
             key=f"max_{pid}"
             )
             st.write("Prix de départ", f"{starting_price:.2f} €")
-            st.caption("Prix de départ", f"{starting_price:.2f} €")
+            st.caption(f"Prix de départ : {starting_price:.2f} €")
+
 
         
         # quantité désirée
