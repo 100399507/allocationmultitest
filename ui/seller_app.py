@@ -24,7 +24,7 @@ def seller_app():
                 "Stock total": p["stock"],
                 "MOQ": p["seller_moq"],
                 "Volume multiple": p["volume_multiple"],
-                "Prix de départ (€)": round(p["starting_price"],0)
+                "Prix de départ (€)": round(p["starting_price"])
             })
         
         st.table(pd.DataFrame(product_summary))  # ou st.dataframe si tu veux filtrer/trier
