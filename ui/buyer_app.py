@@ -6,7 +6,7 @@ from services.bid_service import save_final_allocations
 from core.allocation_algo import run_auto_bid_aggressive, solve_model
 
 def buyer_app():
-    st.title("🛒 Interface Acheteur")
+    st.title("🛒 Dashboard Acheteur")
 
     # Session state
     if "buyers" not in st.session_state:
@@ -26,6 +26,7 @@ def buyer_app():
     st.subheader("📝 Informations sur les produits (cliquer pour afficher)")
     product_summary = []
     for pid, p in products.items():
+        
         # Chercher le prix max actuel pour ce produit
         product_history = [h for h in history if h["product"] == pid]
         if product_history:
@@ -57,6 +58,7 @@ def buyer_app():
 
         # prix de départ dynamique
         if history:
+            history = load_json("bids_history.json")
             product_history = [h for h in history if h["product"] == pid]
             if product_history:
                 starting_price = max(h["final_price"] for h in product_history)
