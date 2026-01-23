@@ -22,3 +22,12 @@ def save_final_allocations(buyers, allocations):
 
     save_json("bids_history.json", history)
 
+
+#### Vider l'historique des enchères 
+from services.state_manager import save_json
+
+def reset_bid_history():
+    """
+    Vide complètement le fichier bid_history.json
+    """
+    save_json("bids_history.json", [])
