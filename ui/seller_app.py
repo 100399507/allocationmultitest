@@ -32,17 +32,24 @@ def seller_app():
 
             if last_allocations:
                 rows = []
+                total_ca = 0
                 for h in last_allocations:
+                    ca = h["final_price"] * h["qty_allocated"]
+                    total_ca += ca
                     rows.append({
                         "Acheteur": h["buyer"],
                         "Qté allouée": h["qty_allocated"],
                         "Prix final (€)": h["final_price"],
                         "Qté demandée": h["qty_desired"],
                         "Prix max (€)": h["max_price"],
-                        "Date": h["timestamp"]
+                        "Date": h["timestamp"],
+                        "Chiffre d'affaires (€)": ca
                     })
 
                 st.dataframe(pd.DataFrame(rows))
+                
+                # Afficher le CA total du produit
+                st.markdown(f"**💰 Chiffre d'affaires total pour ce produit : {total_ca:.2f} €**")
             else:
                 st.info("Aucun acheteur avec allocation pour ce produit")
         else:
