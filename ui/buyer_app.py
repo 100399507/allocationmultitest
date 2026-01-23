@@ -16,6 +16,24 @@ def buyer_app():
     buyer_id = st.text_input("Votre identifiant acheteur", "buyer_A")
 
     # -----------------------------
+    # Cadre récapitulatif des produits
+    # -----------------------------
+    with st.expander("📝 Informations sur les produits (cliquer pour afficher)"):
+    
+        product_summary = []
+        for pid, p in products.items():
+            product_summary.append({
+                "Produit": p["name"],
+                "Stock total": p["stock"],
+                "MOQ": p["seller_moq"],
+                "Volume multiple": p["volume_multiple"],
+                "Prix de départ (€)": round(p["starting_price"])
+            })
+        
+        st.table(pd.DataFrame(product_summary))
+        st.info("Minimum de commande total = 80")
+
+    # -----------------------------
     # Créer un "draft" temporaire des entrées de l'acheteur
     # -----------------------------
     draft_products = {}
