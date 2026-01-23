@@ -84,7 +84,7 @@ def buyer_app():
             
         max_price = st.number_input(
             "Prix max",
-            min_value=p["starting_price"],
+            min_value = starting_price,
             step=0.5,
             key=f"max_{pid}"
         )
