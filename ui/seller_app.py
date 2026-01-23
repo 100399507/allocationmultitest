@@ -9,7 +9,7 @@ def seller_app():
     history = load_json("bids_history.json")
 
     if not history:
-        st.info("Aucune enchère dans l'historique")
+        
         # -----------------------------
         # Cadre récapitulatif des produits
         # -----------------------------
@@ -25,7 +25,8 @@ def seller_app():
                     "Prix de départ (€)": round(p["starting_price"])
                 })
             
-            st.table(pd.DataFrame(product_summary))  
+            st.table(pd.DataFrame(product_summary))
+            st.info("Aucune enchère dans l'historique")
         return
 
     # -----------------------------
