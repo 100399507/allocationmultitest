@@ -31,8 +31,10 @@ def buyer_app():
             "Prix de départ (€)": round(p["starting_price"])
         })
     
-    st.table(pd.DataFrame(product_summary))
-    st.table(df.style.set_properties(**{'text-align': 'center'})) # Centrer tout le contenu
+    st.table(
+        pd.DataFrame(product_summary)
+          .style.set_properties(**{'text-align': 'center'})
+    )
     st.info("Minimum de commande tout produit avant et après allocation : 80")
 
     # -----------------------------
