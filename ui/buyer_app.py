@@ -72,11 +72,20 @@ def buyer_app():
             else:
                 starting_price = p["starting_price"]
     
-            st.metric("Prix de départ", f"{starting_price:.2f} €")
+            st.write("Prix de départ", f"{starting_price:.2f} €")
+
+        # prix max
+        with col2:
+             max_price = st.number_input(
+            "Prix max",
+            min_value = starting_price,
+            step=0.5,
+            key=f"max_{pid}"
+            )
 
         
         # quantité désirée
-        with col2:
+        with col3:
             qty = st.number_input(
             "Quantité désirée",
             min_value=p["seller_moq"],
@@ -90,14 +99,6 @@ def buyer_app():
             st.warning(f"La quantité pour {p['name']} doit être un multiple de {p['volume_multiple']}.")
             valid_input = False
         
-        # prix max
-        with col3:
-             max_price = st.number_input(
-            "Prix max",
-            min_value = starting_price,
-            step=0.5,
-            key=f"max_{pid}"
-            )
         
         draft_products[pid] = {
         "qty_desired": qty,
