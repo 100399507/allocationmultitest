@@ -26,6 +26,7 @@ def buyer_app():
         qty = st.number_input(
             "Quantité désirée",
             min_value=p["seller_moq"],
+            max_value=p["stock"],
             step=p["volume_multiple"],
             key=f"qty_{pid}"
         )
