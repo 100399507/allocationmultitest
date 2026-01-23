@@ -40,7 +40,7 @@ def buyer_app():
             "Stock total": p["stock"],
             "MOQ": p["seller_moq"],
             "Volume multiple": p["volume_multiple"],
-            "Prix de départ (€)": current_price
+            "Prix de départ (€)": round(current_price, 2)
         })
     
     st.table(pd.DataFrame(product_summary))
