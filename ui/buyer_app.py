@@ -55,14 +55,20 @@ def buyer_app():
     
     
     for pid, p in products.items():
-        #st.metric(p["name"])
         st.markdown(f"<span style='font-size:16px; font-weight:bold'>{p['name']}</span>", unsafe_allow_html=True)
 
     
-        col1, col2, col3 = st.columns([1, 1, 1])
+        col1, col2 = st.columns([1, 1])
         
-        # prix de départ
+        # prix max
         with col1:
+             max_price = st.number_input(
+            "Prix max",
+            min_value = starting_price,
+            step=0.5,
+            key=f"max_{pid}"
+            )
+
             # prix de départ dynamique
             if history:
                 history = load_json("bids_history.json")
@@ -74,20 +80,11 @@ def buyer_app():
             else:
                 starting_price = p["starting_price"]
     
-            st.write("Prix de départ", f"{starting_price:.2f} €")
-
-        # prix max
-        with col2:
-             max_price = st.number_input(
-            "Prix max",
-            min_value = starting_price,
-            step=0.5,
-            key=f"max_{pid}"
-            )
+            st.markdown("Prix de départ", f"{starting_price:.2f} €")
 
         
         # quantité désirée
-        with col3:
+        with col2:
             qty = st.number_input(
             "Quantité désirée",
             min_value=p["seller_moq"],
