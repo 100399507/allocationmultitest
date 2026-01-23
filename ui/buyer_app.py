@@ -77,7 +77,7 @@ def buyer_app():
         total_qty_desired += qty
 
     # Vérification MOQ global
-    GLOBAL_MOQ = 80
+    GLOBAL_MOQ = 150
     if total_qty_desired < GLOBAL_MOQ:
         st.warning(f"La quantité totale demandée ({total_qty_desired}) doit être ≥ MOQ global ({GLOBAL_MOQ}).")
         valid_input = False
