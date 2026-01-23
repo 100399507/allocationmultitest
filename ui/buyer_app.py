@@ -32,6 +32,7 @@ def buyer_app():
         })
     
     st.table(pd.DataFrame(product_summary))
+    st.table(df.style.set_properties(**{'text-align': 'center'})) # Centrer tout le contenu
     st.info("Minimum de commande tout produit avant et après allocation : 80")
 
     # -----------------------------
