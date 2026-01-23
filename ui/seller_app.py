@@ -25,7 +25,7 @@ def seller_app():
     # -----------------------------
     # Afficher le CA global en haut
     # -----------------------------
-    st.markdown(f"## 💵 Chiffre d'affaires total tous produits : {total_ca_all_products:.2f} €")
+    st.markdown(f"## 💵 Chiffre d'affaires total : {total_ca_all_products:.2f} €")
     st.markdown("---")  # séparateur visuel
 
     # -----------------------------
