@@ -19,20 +19,20 @@ def buyer_app():
     # -----------------------------
     # Cadre récapitulatif des produits
     # -----------------------------
-    with st.expander("📝 Informations sur les produits (cliquer pour afficher)"):
+    #with st.expander("📝 Informations sur les produits (cliquer pour afficher)"):
+    st.subheader("📝 Informations sur les produits (cliquer pour afficher)")
+    product_summary = []
+    for pid, p in products.items():
+        product_summary.append({
+            "Produit": p["name"],
+            "Stock total": p["stock"],
+            "MOQ": p["seller_moq"],
+            "Volume multiple": p["volume_multiple"],
+            "Prix de départ (€)": round(p["starting_price"])
+        })
     
-        product_summary = []
-        for pid, p in products.items():
-            product_summary.append({
-                "Produit": p["name"],
-                "Stock total": p["stock"],
-                "MOQ": p["seller_moq"],
-                "Volume multiple": p["volume_multiple"],
-                "Prix de départ (€)": round(p["starting_price"])
-            })
-        
-        st.table(pd.DataFrame(product_summary))
-        st.info("Minimum de commande tout produit avant et après allocation : 80")
+    st.table(pd.DataFrame(product_summary))
+    st.info("Minimum de commande tout produit avant et après allocation : 80")
 
     # -----------------------------
     # Créer un "draft" temporaire des entrées de l'acheteur
@@ -77,9 +77,9 @@ def buyer_app():
         total_qty_desired += qty
 
     # Vérification MOQ global
-    GLOBAL_MOQ = 150
+    GLOBAL_MOQ = 80
     if total_qty_desired < GLOBAL_MOQ:
-        st.warning(f"La quantité totale demandée ({total_qty_desired}) doit être ≥ MOQ global ({GLOBAL_MOQ}).")
+        st.warning(f"La quantité totale demandée ({total_qty_desired}) doit être supérieure au minimum de commande global ({GLOBAL_MOQ}).")
         valid_input = False
 
     # -----------------------------
