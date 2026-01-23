@@ -40,7 +40,7 @@ def buyer_app():
             "Stock total": p["stock"],
             "MOQ": p["seller_moq"],
             "Volume multiple": p["volume_multiple"],
-            "Prix de départ (€)": round(current_price)
+            "Prix de départ (€)": current_price
         })
     
     st.table(pd.DataFrame(product_summary))
@@ -67,7 +67,7 @@ def buyer_app():
         else:
             starting_price = p["starting_price"]
 
-        st.metric("Prix de départ", f"{starting_price:.0f} €")
+        st.metric("Prix de départ", f"{starting_price:.2f} €")
 
         qty = st.number_input(
             "Quantité désirée",
