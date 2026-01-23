@@ -11,30 +11,42 @@ def seller_app():
     for pid, p in products.items():
         st.subheader(p["name"])
 
-        # -----------------------------
-        # État courant des enchères
-        # -----------------------------
-        st.markdown("**📊 Enchères en cours**")
 
-        rows = []
-        for buyer, bid in p.get("bids", {}).items():
-            rows.append({
-                "Acheteur": buyer,
-                "Quantité demandée": bid["qty_desired"],
-                "Prix courant (€)": bid["current_price"],
-                "Prix max (€)": bid["max_price"],
-                "Auto-bid": bid["auto_bid"]
-            })
+        # -----------------------------
+        # Historique des résultats finaux : dernière allocation
+        # -----------------------------
+        st.markdown("**📜 Dernière allocation finale**")
 
-        if rows:
-            st.dataframe(pd.DataFrame(rows))
+        # Filtrer l'historique pour ce produit
+        product_history = [h for h in history if h["product"] == pid]
+
+        if product_history:
+            # Trouver la dernière timestamp
+            latest_time = max(h["timestamp"] for h in product_history)
+
+            # Ne garder que les entrées avec cette timestamp
+            last_allocation = [h for h in product_history if h["timestamp"] == latest_time]
+
+            # Préparer l'affichage
+            hist_rows = []
+            for h in last_allocation:
+                hist_rows.append({
+                    "Acheteur": h["buyer"],
+                    "Qté demandée": h["qty_desired"],
+                    "Qté allouée": h["qty_allocated"],
+                    "Prix final (€)": h["final_price"],
+                    "Prix max (€)": h["max_price"],
+                    "Date": h["timestamp"]
+                })
+
+            st.dataframe(pd.DataFrame(hist_rows))
         else:
-            st.info("Aucune enchère en cours")
+            st.info("Aucun historique pour ce produit")
 
         # -----------------------------
         # Historique des résultats finaux
         # -----------------------------
-        st.markdown("**📜 Historique des allocations finales**")
+        st.markdown("**📜 Historique des enchères et allocations**")
 
         product_history = [
             h for h in history if h["product"] == pid
