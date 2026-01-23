@@ -8,6 +8,10 @@ def seller_app():
     products = load_json("products.json")
     history = load_json("bids_history.json")
 
+    if not history:
+        st.info("Aucune enchère dans l'historique")
+        return
+
     # -----------------------------
     # Transformer en DataFrame
     # -----------------------------
