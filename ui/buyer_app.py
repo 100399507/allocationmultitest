@@ -1,7 +1,7 @@
 import streamlit as st
 import copy
 from services.state_manager import load_json
-#from services.bid_service import place_bid
+from services.bid_service import save_final_allocations
 from core.allocation_algo import run_auto_bid_aggressive, solve_model
 
 def buyer_app():
@@ -112,8 +112,10 @@ def buyer_app():
     # -----------------------------
     # Bouton unique pour tous les produits
     # -----------------------------
+
     if st.button("💰 Placer l’enchère pour tous les produits"):
-        # Ajouter le buyer courant s'il n'existe pas encore
+    
+        # 1️⃣ Ajouter / mettre à jour le buyer
         if not any(b["name"] == buyer_id for b in st.session_state.buyers):
             st.session_state.buyers.append({
                 "name": buyer_id,
@@ -121,18 +123,40 @@ def buyer_app():
                 "auto_bid": True
             })
         else:
-            # Mettre à jour les valeurs si déjà présent
             for b in st.session_state.buyers:
                 if b["name"] == buyer_id:
                     b["products"] = copy.deepcopy(draft_products)
                     b["auto_bid"] = True
-
-        # Placer les enchères (optionnel si tu as une fonction place_bid par produit)
-        #for pid, prod in draft_products.items():
-            #place_bid(buyer_id, pid, prod["qty_desired"], prod["max_price"])
-
-        # Lancer l'auto-bid pour tous les buyers
-        st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
-
-        st.success("Enchères placées et auto-bid lancé pour tous les produits")
     
+        # 2️⃣ AUTO-BID (formation des prix)
+        st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers,list(products.values()))
+    
+        # 3️⃣ SOLVEUR (allocation finale)
+        allocations, _ = solve_model(
+            st.session_state.buyers,
+            list(products.values())
+        )
+    
+        # 4️⃣ SAUVEGARDE HISTORIQUE FINAL
+        save_final_allocations(st.session_state.buyers, allocations)
+    
+        # 5️⃣ AFFICHAGE POUR L’ACHETEUR COURANT
+        buyer_alloc = allocations.get(buyer_id, {})
+    
+        result_rows = []
+        for pid, prod in draft_products.items():
+            result_rows.append({
+                "Produit": products[pid]["name"],
+                "Qté demandée": prod["qty_desired"],
+                "Qté allouée": buyer_alloc.get(pid, 0),
+                "Prix final (€)": next(
+                    b for b in st.session_state.buyers if b["name"] == buyer_id
+                )["products"][pid]["current_price"]
+            })
+    
+        st.subheader("✅ Allocation finale du stock")
+        st.dataframe(result_rows)
+    
+        st.success("Marché clôturé : allocation finale calculée et enregistrée")
+    
+        
