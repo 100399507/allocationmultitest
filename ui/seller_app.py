@@ -8,42 +8,48 @@ def seller_app():
     products = load_json("products.json")
     history = load_json("bids_history.json")
     
-    #Pour calcul du CA global
+    # -----------------------------
+    # Calculer le CA global avant affichage
+    # -----------------------------
     total_ca_all_products = 0
+    for pid, p in products.items():
+        product_history = [h for h in history if h["product"] == pid]
+        if product_history:
+            latest_time = max(h["timestamp"] for h in product_history)
+            last_allocations = [
+                h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0
+            ]
+            for h in last_allocations:
+                total_ca_all_products += h["final_price"] * h["qty_allocated"]
 
     # -----------------------------
-    # Chiffre d'affaires total global
+    # Afficher le CA global en haut
     # -----------------------------
     st.markdown(f"## 💵 Chiffre d'affaires total tous produits : {total_ca_all_products:.2f} €")
+    st.markdown("---")  # séparateur visuel
 
-
+    # -----------------------------
+    # Affichage détaillé produit par produit
+    # -----------------------------
     for pid, p in products.items():
         st.subheader(p["name"])
 
-        # -----------------------------
         # Enchères en cours : derniers allocataires
-        # -----------------------------
         st.markdown("**📊 Enchères en cours (acheteurs avec allocation)**")
-
-        # Filtrer l'historique pour ce produit
         product_history = [h for h in history if h["product"] == pid]
 
         if product_history:
-            # Trouver la dernière timestamp pour ce produit
             latest_time = max(h["timestamp"] for h in product_history)
-
-            # Sélectionner uniquement les allocations de ce round
             last_allocations = [
-                h for h in product_history 
-                if h["timestamp"] == latest_time and h["qty_allocated"] > 0
+                h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0
             ]
 
             if last_allocations:
                 rows = []
-                total_ca = 0
+                total_ca_product = 0
                 for h in last_allocations:
                     ca = h["final_price"] * h["qty_allocated"]
-                    total_ca += ca
+                    total_ca_product += ca
                     rows.append({
                         "Acheteur": h["buyer"],
                         "Qté allouée": h["qty_allocated"],
@@ -54,27 +60,15 @@ def seller_app():
                         "Date": h["timestamp"]
                     })
 
-                total_ca_all_products += total_ca
-
                 st.dataframe(pd.DataFrame(rows))
-                
-                # Afficher le CA total du produit
-                st.markdown(f"**💰 Chiffre d'affaires total pour ce produit : {total_ca:.2f} €**")
+                st.markdown(f"**💰 Chiffre d'affaires total pour ce produit : {total_ca_product:.2f} €**")
             else:
                 st.info("Aucun acheteur avec allocation pour ce produit")
         else:
             st.info("Aucune allocation pour ce produit")
 
-
-        # -----------------------------
-        # Historique des résultats finaux
-        # -----------------------------
+        # Historique détaillé dans un expander
         with st.expander("📜 Historique des enchères (cliquer pour afficher)"):
-
-            product_history = [
-                h for h in history if h["product"] == pid
-            ]
-    
             if product_history:
                 hist_rows = []
                 for h in product_history:
@@ -86,10 +80,6 @@ def seller_app():
                         "Prix max (€)": h["max_price"],
                         "Date": h["timestamp"]
                     })
-    
                 st.dataframe(pd.DataFrame(hist_rows))
             else:
                 st.info("Aucun historique pour ce produit")
-    
-    
-
