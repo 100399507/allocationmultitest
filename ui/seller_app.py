@@ -7,6 +7,26 @@ def seller_app():
 
     products = load_json("products.json")
     history = load_json("bids_history.json")
+
+    # -----------------------------
+    # Transformer en DataFrame
+    # -----------------------------
+    df = pd.DataFrame(history)
+
+    # Calcul du chiffre d'affaires par ligne
+    df["ca"] = df["final_price"] * df["qty_allocated"]
+
+    # Grouper par timestamp pour obtenir le CA global par round
+    df_ca_global = df.groupby("timestamp")["ca"].sum().reset_index()
+    df_ca_global = df_ca_global.sort_values("timestamp")
+
+    # Afficher le tableau
+    st.subheader("📈 Évolution du chiffre d'affaires global (tous produits)")
+    st.dataframe(df_ca_global)
+
+    # Option : afficher un graphique
+    st.line_chart(df_ca_global.set_index("timestamp")["ca"])
+
     
     # -----------------------------
     # Calculer le CA global avant affichage
