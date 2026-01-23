@@ -53,52 +53,63 @@ def buyer_app():
     total_qty_desired = 0  # pour MOQ global
     valid_input = True     # flag global
     
+    
     for pid, p in products.items():
         st.subheader(p["name"])
-
-        # prix de départ dynamique
-        if history:
-            history = load_json("bids_history.json")
-            product_history = [h for h in history if h["product"] == pid]
-            if product_history:
-                starting_price = max(h["final_price"] for h in product_history)
+    
+        col1, col2, col3 = st.columns([1, 1, 1])
+        
+        # prix de départ
+        with col1:
+            # prix de départ dynamique
+            if history:
+                history = load_json("bids_history.json")
+                product_history = [h for h in history if h["product"] == pid]
+                if product_history:
+                    starting_price = max(h["final_price"] for h in product_history)
+                else:
+                    starting_price = p["starting_price"]
             else:
                 starting_price = p["starting_price"]
-        else:
-            starting_price = p["starting_price"]
+    
+            st.metric("Prix de départ", f"{starting_price:.2f} €")
 
-        st.metric("Prix de départ", f"{starting_price:.2f} €")
-
-        qty = st.number_input(
+        
+        # quantité désirée
+        with col2:
+            qty = st.number_input(
             "Quantité désirée",
             min_value=p["seller_moq"],
             max_value=p["stock"],
             step=p["volume_multiple"],
             key=f"qty_{pid}"
-        )
+            )
         
         # Vérification du multiple
         if qty % p["volume_multiple"] != 0:
             st.warning(f"La quantité pour {p['name']} doit être un multiple de {p['volume_multiple']}.")
             valid_input = False
-            
-        max_price = st.number_input(
+        
+        # prix max
+        with col3:
+             max_price = st.number_input(
             "Prix max",
             min_value = starting_price,
             step=0.5,
             key=f"max_{pid}"
-        )
-
+            )
+        
         draft_products[pid] = {
-            "qty_desired": qty,
-            "current_price": p["starting_price"],  # valeur initiale
-            "max_price": max_price,
-            "moq": p["seller_moq"],               # nécessaire pour solve_model
-            "volume_multiple": p["volume_multiple"],
-            "stock": p["stock"]
+        "qty_desired": qty,
+        "current_price": starting_price,  # prix courant max 
+        "max_price": max_price,
+        "moq": p["seller_moq"],               
+        "volume_multiple": p["volume_multiple"],
+        "stock": p["stock"]
         }
         
         total_qty_desired += qty
+
 
     # Vérification MOQ global
     GLOBAL_MOQ = 80
