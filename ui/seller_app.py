@@ -26,6 +26,7 @@ def seller_app():
                 })
             
             st.table(pd.DataFrame(product_summary))
+            st.info("Minimum de commande total = 80")
         
         st.info("Aucune enchère dans l'historique")
         return
