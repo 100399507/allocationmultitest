@@ -183,7 +183,7 @@ def buyer_app():
             st.dataframe(rec_rows)
             
     # -----------------------------
-    # Bouton unique pour tous les produits
+    # Bouton pour valider l'enchère
     # -----------------------------
     if st.button("💰 Placer l’enchère pour tous les produits", disabled=not valid_input):
     
@@ -209,7 +209,7 @@ def buyer_app():
             list(products.values())
         )
     
-        # 4️⃣ SAUVEGARDE HISTORIQUE FINAL
+        # 4️⃣ SAUVEGARDE HISTORIQUE FINAL dans le tableau JSON
         save_final_allocations(st.session_state.buyers, allocations)
     
         # 5️⃣ AFFICHAGE POUR L’ACHETEUR COURANT
