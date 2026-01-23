@@ -78,8 +78,7 @@ def buyer_app():
             step=0.5,
             key=f"max_{pid}"
             )
-            
-            st.markdown("Prix de départ", f"{starting_price:.2f} €")
+            st.write("Prix de départ", f"{starting_price:.2f} €")
 
         
         # quantité désirée
