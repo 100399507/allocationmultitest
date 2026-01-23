@@ -78,11 +78,8 @@ def buyer_app():
             step=0.5,
             key=f"max_{pid}"
             )
-            st.write("Prix de départ", f"{starting_price:.2f} €")
             st.caption(f"Prix de départ : {starting_price:.2f} €")
 
-
-        
         # quantité désirée
         with col2:
             qty = st.number_input(
@@ -92,6 +89,7 @@ def buyer_app():
             step=p["volume_multiple"],
             key=f"qty_{pid}"
             )
+            st.caption(f"Quantité min : {p["seller_moq"]} & Quantité max : {p["stock"]}")
         
         # Vérification du multiple
         if qty % p["volume_multiple"] != 0:
