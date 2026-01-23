@@ -32,7 +32,8 @@ def buyer_app():
         )
         
         # Vérification du multiple
-        if qty % p["volume_multiple"] != 0:
+        valid_qty = (qty % p["volume_multiple"] == 0)
+        if not valid_qty:
             st.warning(f"La quantité doit être un multiple de {p['volume_multiple']}.")
             
         max_price = st.number_input(
