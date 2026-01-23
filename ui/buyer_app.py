@@ -128,8 +128,8 @@ def buyer_app():
                     b["auto_bid"] = True
 
         # Placer les enchères (optionnel si tu as une fonction place_bid par produit)
-        for pid, prod in draft_products.items():
-            place_bid(buyer_id, pid, prod["qty_desired"], prod["max_price"])
+        #for pid, prod in draft_products.items():
+            #place_bid(buyer_id, pid, prod["qty_desired"], prod["max_price"])
 
         # Lancer l'auto-bid pour tous les buyers
         st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(products.values()))
