@@ -91,7 +91,7 @@ def buyer_app():
             step=p["volume_multiple"],
             key=f"qty_{pid}"
             )
-            st.caption(f"Min : {p["seller_moq"]} / Max : {p["stock"]} / Multiple : {p["volume_multiple"]}")
+            st.caption(f"Min : {p["seller_moq"]}   Max : {p["stock"]}   Multiple : {p["volume_multiple"]}")
         
         # Vérification du multiple
         if qty % p["volume_multiple"] != 0:
