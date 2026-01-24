@@ -124,7 +124,7 @@ def buyer_app():
     
     #Passage par un state, sinon rerun et le bouton disparait
     if "sim_alloc" not in st.session_state:
-    st.session_state.sim_alloc = {}  # dictionnaire vide au départ
+        st.session_state.sim_alloc = {}  # dictionnaire vide au départ
 
     if st.button("🧪 Simuler mon allocation et recommandation", disabled=not valid_input):
         if not buyer_id:
