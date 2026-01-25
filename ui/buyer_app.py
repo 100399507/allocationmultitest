@@ -107,7 +107,7 @@ def buyer_app():
             else:
                 current_price = p["starting_price"]
         
-            current_prices[pid] = current_price  # stocker dans le dict
+        current_prices[pid] = current_price  # stocker dans le dict
         
         # Pour ton tableau résumé
         product_summary.append({
