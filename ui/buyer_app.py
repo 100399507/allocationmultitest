@@ -91,93 +91,90 @@ def buyer_app():
     # Cadre récapitulatif des produits
     # -----------------------------
 
-    with st.expander("📝 Informations sur les produits (cliquer pour afficher)", expanded=True):
-       # Dictionnaire pour stocker le prix courant par produit
-        current_prices = {}
-        product_summary = []
+    st.subheader("🛒 Vos produits et enchères")
 
-        for pid, p in products.items():
-            # Filtrer uniquement les enchères avec allocation > 0 pour ce produit
-            product_history = [h for h in history if h["product"] == pid and h["qty_allocated"] > 0]
-        
-            if product_history:
-                # Dernier round
-                latest_ts = max(h["timestamp"] for h in product_history)
-                last_round = [h for h in product_history if h["timestamp"] == latest_ts]
-                current_price = min(h["final_price"] for h in last_round)
-            else:
-                current_price = p["starting_price"]
-        
-            current_prices[pid] = current_price  # stocker dans le dict
-            
-            # Pour ton tableau résumé
-            product_summary.append({
-                "Produit": p["name"],
-                "Stock total": p["stock"],
-                "MOQ": p["seller_moq"],
-                "Volume multiple": p["volume_multiple"],
-                "Prix de départ (€)": f"{current_price:.2f}"
-            })
+    # Créer un dict pour retrouver la dernière quantité désirée de l'acheteur
+    last_qty = {}
+    last_price = {}
+    if buyer_history:
+        df_buyer = (
+            pd.DataFrame(buyer_history)
+            .assign(timestamp=lambda d: pd.to_datetime(d["timestamp"]))
+            .sort_values("timestamp")
+            .groupby("product", as_index=False)
+            .last()
+        )
+        for _, row in df_buyer.iterrows():
+            last_qty[row["product"]] = row["qty_desired"]
+            last_price[row["product"]] = row["max_price"]
     
-    st.table(pd.DataFrame(product_summary))
-    st.info("Minimum de commande tout produit avant et après allocation : 80")
-
-    # -----------------------------
-    # Créer un "draft" temporaire des entrées de l'acheteur
-    # -----------------------------
+    # Boucle sur les produits
     draft_products = {}
-    total_qty_desired = 0  # pour MOQ global
-    valid_input = True     # flag global
-    
+    total_qty_desired = 0
+    valid_input = True
     
     for pid, p in products.items():
-
-        col1, col2, col3 = st.columns([1, 1, 1])
-        
-        # prix max
-        with col1:
-            st.markdown(f"<span style='font-size:16px; font-weight:bold'>{p['name']}</span>", unsafe_allow_html=True)
-            
-        with col2:
-            starting_price = current_prices[pid]  #Prix min avec du stock alloué dernière enchère
+        # colonnes : Nom | Infos | Prix max | Quantité désirée
+        col_name, col_info, col_price, col_qty = st.columns([2, 2, 1.5, 1.5])
+    
+        # --- Nom produit ---
+        with col_name:
+            st.markdown(f"**{p['name']}**")
+    
+        # --- Infos produit ---
+        with col_info:
+            st.markdown(
+                f"Stock: {p['stock']} | MOQ: {p['seller_moq']} | Multiple: {p['volume_multiple']}"
+            )
+    
+        # --- Prix max ---
+        with col_price:
+            starting_price = current_prices.get(pid, p["starting_price"])
+            default_price = last_price.get(pid, starting_price)
             max_price = st.number_input(
                 "Prix max",
                 min_value=starting_price,
                 step=0.5,
+                value=default_price,
                 key=f"max_{pid}"
             )
-            st.caption(f"Prix de départ : {starting_price:.2f} €")
-
-        # quantité désirée
-        with col3:
-            qty = st.number_input("Quantité désirée",min_value=p["seller_moq"],max_value=p["stock"],step=p["volume_multiple"],key=f"qty_{pid}"
-                                 )
-            st.caption(f"Min : {p['seller_moq']}   Max : {p['stock']}   Multiple : {p['volume_multiple']}")
-
-        
+            st.caption(f"Prix min: {starting_price:.2f} €")
+    
+        # --- Quantité désirée ---
+        with col_qty:
+            default_qty = last_qty.get(pid, p["seller_moq"])
+            qty = st.number_input(
+                "Qté désirée",
+                min_value=p["seller_moq"],
+                max_value=p["stock"],
+                step=p["volume_multiple"],
+                value=default_qty,
+                key=f"qty_{pid}"
+            )
+            st.caption(f"Min: {p['seller_moq']} | Max: {p['stock']} | Multiple: {p['volume_multiple']}")
+    
         # Vérification du multiple
         if qty % p["volume_multiple"] != 0:
             st.warning(f"La quantité pour {p['name']} doit être un multiple de {p['volume_multiple']}.")
             valid_input = False
-        
-        
+    
         draft_products[pid] = {
-        "qty_desired": qty,
-        "current_price": starting_price,  # prix courant max 
-        "max_price": max_price,
-        "moq": p["seller_moq"],               
-        "volume_multiple": p["volume_multiple"],
-        "stock": p["stock"]
+            "qty_desired": qty,
+            "current_price": starting_price,
+            "max_price": max_price,
+            "moq": p["seller_moq"],
+            "volume_multiple": p["volume_multiple"],
+            "stock": p["stock"]
         }
-        
+    
         total_qty_desired += qty
-
-
+    
     # Vérification MOQ global
     GLOBAL_MOQ = 80
     if total_qty_desired < GLOBAL_MOQ:
-        st.warning(f"La quantité totale demandée ({total_qty_desired}) doit être supérieure au minimum de commande global ({GLOBAL_MOQ}).")
+        st.warning(f"La quantité totale demandée ({total_qty_desired}) doit être ≥ au MOQ global ({GLOBAL_MOQ}).")
         valid_input = False
+
 
     # -----------------------------
     # Bouton simulation + recommandation
