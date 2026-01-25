@@ -1,5 +1,5 @@
 import streamlit as st
-import pandas as pd
+import pandas as pd 
 from services.state_manager import load_json, save_json
 
 def admin_app():
@@ -14,12 +14,17 @@ def admin_app():
 
     products = load_json("products.json")
     buyers = load_json("buyers.json")
+    bids_history = load_json("bids_history.json") 
+
 
     st.subheader("👥 Acheteurs")
     st.json(buyers)
 
     st.subheader("📦 Produits & Enchères")
     st.json(products)
+
+    st.subheader("📝 Historique complet des enchères")
+    st.json(bids_history)
 
     if st.button("🧹 Reset toutes les enchères"):
         for p in products.values():
