@@ -9,7 +9,7 @@ def buyer_app():
 
     st.title("🛒 Espace Acheteur")
 
-    buyer_id = st.text_input("Votre identifiant acheteur (confidentiel)",type="text")
+    buyer_id = st.text_input("Votre identifiant acheteur (confidentiel)")
 
     if not buyer_id:
         st.info("Veuillez saisir votre identifiant pour accéder à votre espace.")
