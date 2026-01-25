@@ -90,10 +90,21 @@ def buyer_app():
     # -----------------------------
     # Cadre récapitulatif des produits
     # -----------------------------
-
     st.subheader("🛒 Vos produits et enchères")
-
-    # Créer un dict pour retrouver la dernière quantité désirée de l'acheteur
+    
+    # --- Calculer le prix courant par produit (min final_price dernière enchère avec allocation >0) ---
+    current_prices = {}
+    for pid, p in products.items():
+        # Filtrer uniquement les enchères avec allocation > 0
+        product_history = [h for h in history if h["product"] == pid and h["qty_allocated"] > 0]
+        if product_history:
+            latest_ts = max(h["timestamp"] for h in product_history)
+            last_round = [h for h in product_history if h["timestamp"] == latest_ts]
+            current_prices[pid] = min(h["final_price"] for h in last_round)
+        else:
+            current_prices[pid] = p["starting_price"]
+    
+    # --- Récupérer les dernières valeurs de l'acheteur si existantes ---
     last_qty = {}
     last_price = {}
     if buyer_history:
@@ -108,28 +119,27 @@ def buyer_app():
             last_qty[row["product"]] = row["qty_desired"]
             last_price[row["product"]] = row["max_price"]
     
-    # Boucle sur les produits
+    # --- Boucle affichage produits avec inputs sur la même ligne ---
     draft_products = {}
     total_qty_desired = 0
     valid_input = True
     
     for pid, p in products.items():
-        # colonnes : Nom | Infos | Prix max | Quantité désirée
         col_name, col_info, col_price, col_qty = st.columns([2, 2, 1.5, 1.5])
     
-        # --- Nom produit ---
+        # Nom produit
         with col_name:
             st.markdown(f"**{p['name']}**")
     
-        # --- Infos produit ---
+        # Infos produit
         with col_info:
             st.markdown(
                 f"Stock: {p['stock']} | MOQ: {p['seller_moq']} | Multiple: {p['volume_multiple']}"
             )
     
-        # --- Prix max ---
+        # Prix max
         with col_price:
-            starting_price = current_prices.get(pid, p["starting_price"])
+            starting_price = current_prices[pid]
             default_price = last_price.get(pid, starting_price)
             max_price = st.number_input(
                 "Prix max",
@@ -140,7 +150,7 @@ def buyer_app():
             )
             st.caption(f"Prix min: {starting_price:.2f} €")
     
-        # --- Quantité désirée ---
+        # Quantité désirée
         with col_qty:
             default_qty = last_qty.get(pid, p["seller_moq"])
             qty = st.number_input(
@@ -174,6 +184,7 @@ def buyer_app():
     if total_qty_desired < GLOBAL_MOQ:
         st.warning(f"La quantité totale demandée ({total_qty_desired}) doit être ≥ au MOQ global ({GLOBAL_MOQ}).")
         valid_input = False
+
 
 
     # -----------------------------
