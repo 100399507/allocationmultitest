@@ -9,6 +9,10 @@ def buyer_app():
 
     st.title("🛒 Espace Acheteur")
 
+    # -----------------------------
+    # Saisir un nouvel ID ou ID existant pour masquer les informations d'historique
+    # -----------------------------
+
     buyer_id = st.text_input("Votre identifiant acheteur (confidentiel)")
 
     if not buyer_id:
@@ -21,17 +25,13 @@ def buyer_app():
     if "buyers" not in st.session_state:
         st.session_state.buyers = []
 
-    # Charger les produits
+    # Charger les produits et historique d'enchère
     products = load_json("products.json")
-    buyer_id = st.text_input("Votre identifiant acheteur", buyer_id)
-
-    #Charger les historiques d'enchères
     history = load_json("bids_history.json")
     
-        # -----------------------------
+    # -----------------------------
     # Suivi de l'enchère acheteur
     # -----------------------------
-    
     
     # Filtrer l'historique pour l'acheteur courant
     buyer_history = [
@@ -46,52 +46,46 @@ def buyer_app():
             "Vous n'avez encore placé aucune enchère.\n\n"
             "👉 Renseignez vos prix et quantités ci-dessous pour commencer."
         )
+    
     else:
-        # Convertir en DataFrame
-        df = pd.DataFrame(buyer_history)
-    
-        # S'assurer que timestamp est bien comparable
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
-    
-        # Garder la dernière enchère par produit
-        df_latest = (
-            df.sort_values("timestamp")
-              .groupby("product", as_index=False)
-              .last()
+        df = (
+            pd.DataFrame(buyer_history)
+            .assign(timestamp=lambda d: pd.to_datetime(d["timestamp"]))
+            .sort_values("timestamp")
+            .groupby("product", as_index=False)
+            .last()
+            .rename(columns={
+                "product": "Produit",
+                "qty_desired": "Qté demandée",
+                "qty_allocated": "Qté allouée",
+                "max_price": "Prix max (€)",
+                "final_price": "Prix final (€)",
+                "timestamp": "Dernière mise à jour"
+            })
         )
     
-        # Mise en forme pour affichage
-        df_display = df_latest[[
-            "product",
-            "qty_desired",
-            "qty_allocated",
-            "max_price",
-            "final_price",
-            "timestamp"
-        ]].copy()
+        st.dataframe(
+            df[[
+                "Produit",
+                "Qté demandée",
+                "Qté allouée",
+                "Prix max (€)",
+                "Prix final (€)",
+                "Dernière mise à jour"
+            ]],
+            use_container_width=True
+        )
     
-        df_display.rename(columns={
-            "product": "Produit",
-            "qty_desired": "Qté demandée",
-            "qty_allocated": "Qté allouée",
-            "max_price": "Prix max (€)",
-            "final_price": "Prix final (€)",
-            "timestamp": "Dernière mise à jour"
-        }, inplace=True)
+        total_desired = df["Qté demandée"].sum()
+        total_allocated = df["Qté allouée"].sum()
     
-        st.dataframe(df_display, use_container_width=True)
+        st.warning(
+            f"⚠️ Allocation partielle : {total_allocated} / {total_desired} unités allouées.\n\n"
+            "💡 Vous pouvez modifier votre prix max ou vos quantités et relancer une simulation."
+        ) if total_allocated < total_desired else st.success(
+            "✅ Vous êtes actuellement alloué à 100 % sur vos produits."
+        )
     
-        # Message synthétique
-        total_allocated = df_display["Qté allouée"].sum()
-        total_desired = df_display["Qté demandée"].sum()
-    
-        if total_allocated < total_desired:
-            st.warning(
-                f"⚠️ Allocation partielle : {total_allocated} / {total_desired} unités allouées.\n\n"
-                "💡 Vous pouvez modifier votre prix max ou vos quantités et relancer une simulation."
-            )
-        else:
-            st.success("✅ Vous êtes actuellement alloué à 100 % sur vos produits.")
 
     # -----------------------------
     # Cadre récapitulatif des produits
@@ -148,23 +142,14 @@ def buyer_app():
             else:
                 starting_price = p["starting_price"]
                 
-            max_price = st.number_input(
-            "Prix max",
-            min_value = starting_price,
-            step=0.5,
-            key=f"max_{pid}"
-            )
+            max_price = st.number_input("Prix max",min_value = starting_price,step=0.5,key=f"max_{pid}")
+            
             st.caption(f"Prix de départ : {starting_price:.2f} €")
 
         # quantité désirée
         with col3:
-            qty = st.number_input(
-            "Quantité désirée",
-            min_value=p["seller_moq"],
-            max_value=p["stock"],
-            step=p["volume_multiple"],
-            key=f"qty_{pid}"
-            )
+            qty = st.number_input("Quantité désirée",min_value=p["seller_moq"],max_value=p["stock"],step=p["volume_multiple"],key=f"qty_{pid}"
+                                 )
             st.caption(f"Min : {p['seller_moq']}   Max : {p['stock']}   Multiple : {p['volume_multiple']}")
 
         
