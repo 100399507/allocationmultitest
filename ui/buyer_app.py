@@ -96,12 +96,13 @@ def buyer_app():
         for pid, p in products.items():
             
             # Chercher le prix max actuel pour ce produit
-            product_history = [h for h in history if h["product"] == pid]
+            product_history = [h for h in history if h["product"] == pid and h["qty_allocated"] > 0]
             if product_history:
-                # max des prix finaux alloués ou courants
+                # min des prix finaux alloués ou courants
                 current_price = min(h["final_price"] for h in product_history)
             else:
                 current_price = p["starting_price"]
+
                 
             product_summary.append({
                 "Produit": p["name"],
