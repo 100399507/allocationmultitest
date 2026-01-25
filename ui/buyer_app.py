@@ -23,7 +23,7 @@ def buyer_app():
 
     # Charger les produits
     products = load_json("products.json")
-    buyer_id = st.text_input("Votre identifiant acheteur", "buyer_A")
+    buyer_id = st.text_input("Votre identifiant acheteur", buyer_id)
 
     #Charger les historiques d'enchères
     history = load_json("bids_history.json")
