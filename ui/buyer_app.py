@@ -92,18 +92,24 @@ def buyer_app():
     # -----------------------------
 
     with st.expander("📝 Informations sur les produits (cliquer pour afficher)", expanded=True):
-        product_summary = []
+       # Dictionnaire pour stocker le prix courant par produit
+        current_prices = {}
+
         for pid, p in products.items():
-            
-            # Chercher le prix max actuel pour ce produit
+            # Filtrer uniquement les enchères avec allocation > 0 pour ce produit
             product_history = [h for h in history if h["product"] == pid and h["qty_allocated"] > 0]
+        
             if product_history:
-                # min des prix finaux alloués ou courants
-                current_price = min(h["final_price"] for h in product_history)
+                # Dernier round
+                latest_ts = max(h["timestamp"] for h in product_history)
+                last_round = [h for h in product_history if h["timestamp"] == latest_ts]
+                current_price = min(h["final_price"] for h in last_round)
             else:
                 current_price = p["starting_price"]
-
-                
+        
+            current_prices[pid] = current_price  # stocker dans le dict
+        
+            # Pour ton tableau résumé
             product_summary.append({
                 "Produit": p["name"],
                 "Stock total": p["stock"],
@@ -132,19 +138,13 @@ def buyer_app():
             st.markdown(f"<span style='font-size:16px; font-weight:bold'>{p['name']}</span>", unsafe_allow_html=True)
             
         with col2:
-            # prix de départ dynamique
-            if history:
-                history = load_json("bids_history.json")
-                product_history = [h for h in history if h["product"] == pid]
-                if product_history:
-                    starting_price = min(h["final_price"] for h in product_history)
-                else:
-                    starting_price = p["starting_price"]
-            else:
-                starting_price = p["starting_price"]
-                
-            max_price = st.number_input("Prix max",min_value = starting_price,step=0.5,key=f"max_{pid}")
-            
+            starting_price = current_prices[pid]  #Prix min avec du stock alloué dernière enchère
+            max_price = st.number_input(
+                "Prix max",
+                min_value=starting_price,
+                step=0.5,
+                key=f"max_{pid}"
+            )
             st.caption(f"Prix de départ : {starting_price:.2f} €")
 
         # quantité désirée
