@@ -27,6 +27,71 @@ def buyer_app():
 
     #Charger les historiques d'enchères
     history = load_json("bids_history.json")
+    
+        # -----------------------------
+    # Suivi de l'enchère acheteur
+    # -----------------------------
+    
+    
+    # Filtrer l'historique pour l'acheteur courant
+    buyer_history = [
+        h for h in history
+        if h["buyer"] == buyer_id
+    ]
+    
+    st.subheader("📊 Suivi de mon enchère")
+    
+    if not buyer_history:
+        st.info(
+            "Vous n'avez encore placé aucune enchère.\n\n"
+            "👉 Renseignez vos prix et quantités ci-dessous pour commencer."
+        )
+    else:
+        # Convertir en DataFrame
+        df = pd.DataFrame(buyer_history)
+    
+        # S'assurer que timestamp est bien comparable
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+    
+        # Garder la dernière enchère par produit
+        df_latest = (
+            df.sort_values("timestamp")
+              .groupby("product", as_index=False)
+              .last()
+        )
+    
+        # Mise en forme pour affichage
+        df_display = df_latest[[
+            "product",
+            "qty_desired",
+            "qty_allocated",
+            "max_price",
+            "final_price",
+            "timestamp"
+        ]].copy()
+    
+        df_display.rename(columns={
+            "product": "Produit",
+            "qty_desired": "Qté demandée",
+            "qty_allocated": "Qté allouée",
+            "max_price": "Prix max (€)",
+            "final_price": "Prix final (€)",
+            "timestamp": "Dernière mise à jour"
+        }, inplace=True)
+    
+        st.dataframe(df_display, use_container_width=True)
+    
+        # Message synthétique
+        total_allocated = df_display["Qté allouée"].sum()
+        total_desired = df_display["Qté demandée"].sum()
+    
+        if total_allocated < total_desired:
+            st.warning(
+                f"⚠️ Allocation partielle : {total_allocated} / {total_desired} unités allouées.\n\n"
+                "💡 Vous pouvez modifier votre prix max ou vos quantités et relancer une simulation."
+            )
+        else:
+            st.success("✅ Vous êtes actuellement alloué à 100 % sur vos produits.")
 
     # -----------------------------
     # Cadre récapitulatif des produits
