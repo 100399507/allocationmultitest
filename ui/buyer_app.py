@@ -109,17 +109,17 @@ def buyer_app():
         
             current_prices[pid] = current_price  # stocker dans le dict
         
-            # Pour ton tableau résumé
-            product_summary.append({
-                "Produit": p["name"],
-                "Stock total": p["stock"],
-                "MOQ": p["seller_moq"],
-                "Volume multiple": p["volume_multiple"],
-                "Prix de départ (€)": f"{current_price:.2f}"
-            })
-        
-        st.table(pd.DataFrame(product_summary))
-        st.info("Minimum de commande tout produit avant et après allocation : 80")
+        # Pour ton tableau résumé
+        product_summary.append({
+            "Produit": p["name"],
+            "Stock total": p["stock"],
+            "MOQ": p["seller_moq"],
+            "Volume multiple": p["volume_multiple"],
+            "Prix de départ (€)": f"{current_price:.2f}"
+        })
+    
+    st.table(pd.DataFrame(product_summary))
+    st.info("Minimum de commande tout produit avant et après allocation : 80")
 
     # -----------------------------
     # Créer un "draft" temporaire des entrées de l'acheteur
