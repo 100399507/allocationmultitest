@@ -5,18 +5,16 @@ from services.state_manager import load_json
 from services.bid_service import save_final_allocations
 from core.allocation_algo import run_auto_bid_aggressive, solve_model
 
-st.title("🛒 Espace Acheteur")
-
-buyer_id = st.text_input(
-    "Votre identifiant acheteur (confidentiel)",
-    type="password"
-)
-
-if not buyer_id:
-    st.info("Veuillez saisir votre identifiant pour accéder à votre espace.")
-    return
-
 def buyer_app():
+
+    st.title("🛒 Espace Acheteur")
+
+    buyer_id = st.text_input("Votre identifiant acheteur (confidentiel)",type="password")
+
+    if not buyer_id:
+        st.info("Veuillez saisir votre identifiant pour accéder à votre espace.")
+        return
+    
     st.title("🛒 Dashboard Acheteur")
 
     # Session state
@@ -250,7 +248,6 @@ def buyer_app():
     
         st.subheader("✅ Allocation finale du stock")
         st.dataframe(result_rows)
-        
         st.success("Marché clôturé : allocation finale calculée et enregistrée")
     
     
