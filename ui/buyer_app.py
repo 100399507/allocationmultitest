@@ -31,7 +31,7 @@ def buyer_app():
             product_history = [h for h in history if h["product"] == pid]
             if product_history:
                 # max des prix finaux alloués ou courants
-                current_price = max(h["final_price"] for h in product_history)
+                current_price = min(h["final_price"] for h in product_history)
             else:
                 current_price = p["starting_price"]
                 
@@ -68,7 +68,7 @@ def buyer_app():
                 history = load_json("bids_history.json")
                 product_history = [h for h in history if h["product"] == pid]
                 if product_history:
-                    starting_price = max(h["final_price"] for h in product_history)
+                    starting_price = min(h["final_price"] for h in product_history)
                 else:
                     starting_price = p["starting_price"]
             else:
