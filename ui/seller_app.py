@@ -5,31 +5,36 @@ from services.state_manager import load_json
 def seller_app():
     st.title("Dashboard Vendeur")
 
+    # -----------------------------
+    # Charger les données
+    # -----------------------------
     products = load_json("products.json")
     history = load_json("bids_history.json")
     lots = load_json("lots.json")
 
     # -----------------------------
-    # Saisir buyer_name
+    # Saisir seller_id
     # -----------------------------
-    buyer_name = st.text_input("Votre identifiant vendeur/acheteur (confidentiel)")
-    if not buyer_name:
+    seller_id = st.text_input("Votre identifiant vendeur (confidentiel)")
+    if not seller_id:
         st.info("Veuillez saisir votre identifiant pour accéder à votre espace.")
         return
 
     # -----------------------------
-    # Identifier les lots où ce buyer a des enchères
+    # Identifier les lots de ce vendeur
     # -----------------------------
-    #buyer_lots = {h["lot_id"] for h in history if h["buyer"] == buyer_name}
-    #if not buyer_lots:
-        #st.info("Vous n'avez aucune enchère enregistrée pour le moment.")
-        #return
+    seller_lots = {lot_id: lot for lot_id, lot in lots.items() if lot.get("seller_id") == seller_id}
+    if not seller_lots:
+        st.info("Vous n'avez aucun lot enregistré pour le moment.")
+        return
 
+    # -----------------------------
     # Sélection du lot
+    # -----------------------------
     lot_id = st.selectbox(
         "📦 Sélectionnez un lot",
-        options=list(buyer_lots),
-        format_func=lambda k: lots[k]["lot_name"]
+        options=list(seller_lots.keys()),
+        format_func=lambda k: seller_lots[k]["lot_name"]
     )
 
     # Produits du lot sélectionné
@@ -58,7 +63,10 @@ def seller_app():
         product_history = [h for h in history if h["product"] == pid]
         if product_history:
             latest_time = max(h["timestamp"] for h in product_history)
-            last_allocations = [h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0]
+            last_allocations = [
+                h for h in product_history 
+                if h["timestamp"] == latest_time and h["qty_allocated"] > 0
+            ]
             for h in last_allocations:
                 total_ca += h["final_price"] * h["qty_allocated"]
 
@@ -89,7 +97,10 @@ def seller_app():
         product_history = [h for h in history if h["product"] == pid]
         if product_history:
             latest_time = max(h["timestamp"] for h in product_history)
-            last_allocations = [h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0]
+            last_allocations = [
+                h for h in product_history 
+                if h["timestamp"] == latest_time and h["qty_allocated"] > 0
+            ]
             for h in last_allocations:
                 rows.append({
                     "Produit": p["name"],
