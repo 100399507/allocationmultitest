@@ -1,0 +1,14 @@
+{
+  "lot_1": {
+    "seller_id": "seller_A",
+    "lot_name": "Lot Yaourt",
+    "global_moq": 80,
+    "products": ["P1", "P2", "p3"]
+  },
+  "lot_2": {
+    "seller_id": "seller_B",
+    "lot_name": "Lot Bières Heineken",
+    "global_moq": 80,
+    "products": ["P4", "P5"]
+  }
+}
