@@ -20,10 +20,10 @@ def seller_app():
     # -----------------------------
     # Identifier les lots où ce buyer a des enchères
     # -----------------------------
-    buyer_lots = {h["lot_id"] for h in history if h["buyer"] == buyer_name}
-    if not buyer_lots:
-        st.info("Vous n'avez aucune enchère enregistrée pour le moment.")
-        return
+    #buyer_lots = {h["lot_id"] for h in history if h["buyer"] == buyer_name}
+    #if not buyer_lots:
+        #st.info("Vous n'avez aucune enchère enregistrée pour le moment.")
+        #return
 
     # Sélection du lot
     lot_id = st.selectbox(
