@@ -21,6 +21,17 @@ def buyer_app():
     
     st.title("🛒 Dashboard Acheteur")
 
+    lots = load_json("lots.json")
+
+    lot_id = st.selectbox(
+        "📦 Sélectionnez un lot",
+        options=list(lots.keys()),
+        format_func=lambda k: lots[k]["lot_name"]
+    )
+    
+    if not lot_id:
+        st.stop()
+
     # Session state
     if "buyers" not in st.session_state:
         st.session_state.buyers = []
@@ -36,7 +47,7 @@ def buyer_app():
     # Filtrer l'historique pour l'acheteur courant
     buyer_history = [
         h for h in history
-        if h["buyer"] == buyer_id
+        if h["buyer"] == buyer_id and h["lot_id"] == lot_id
     ]
     
     st.subheader("📊 Suivi de mon enchère")
@@ -98,9 +109,18 @@ def buyer_app():
         
         # --- Calculer le prix courant par produit (min final_price dernière enchère avec allocation >0) ---
         current_prices = {}
-        for pid, p in products.items():
+                
+        lot_products = {
+            pid: p for pid, p in products.items()
+            if p["lot_id"] == lot_id
+        }
+        
+        for pid, p in lot_products.items():
             # Filtrer uniquement les enchères avec allocation > 0
-            product_history = [h for h in history if h["product"] == pid and h["qty_allocated"] > 0]
+            product_history = [
+                h for h in history 
+                if h["product"] == pid and h["qty_allocated"] > 0 and h["lot_id"] == lot_id
+            ]
             if product_history:
                 latest_ts = max(h["timestamp"] for h in product_history)
                 last_round = [h for h in product_history if h["timestamp"] == latest_ts]
@@ -143,7 +163,14 @@ def buyer_app():
         
         st.divider()  # optionnel, pour séparer visuellement
         
-        for pid, p in products.items():
+        
+        lot_products = {
+            pid: p for pid, p in products.items()
+            if p["lot_id"] == lot_id
+        }
+        
+        for pid, p in lot_products.items():
+            
             col_name, col_info, col_price, col_qty = st.columns([2, 2, 1.5, 1.5])
         
             # Nom produit
@@ -197,7 +224,8 @@ def buyer_app():
             total_qty_desired += qty
         
         # Vérification MOQ global
-        GLOBAL_MOQ = 80
+        GLOBAL_MOQ = lots[lot_id]["global_moq"]
+
         if total_qty_desired < GLOBAL_MOQ:
             st.warning(f"La quantité totale demandée ({total_qty_desired}) doit être ≥ au MOQ global ({GLOBAL_MOQ}).")
             valid_input = False
@@ -228,10 +256,11 @@ def buyer_app():
                 buyers_copy.append(temp_buyer)
         
                 # Lancer auto-bid sur copie
-                buyers_simulated = run_auto_bid_aggressive(buyers_copy, list(products.values()), max_rounds=30)
+                buyers_simulated = run_auto_bid_aggressive(buyers_copy, list(lot_products.values()), max_rounds=30)
+                
     
                 # Récupérer allocations simulées
-                allocations, _ = solve_model(buyers_simulated, list(products.values()))
+                allocations, _ = solve_model(buyers_simulated, list(lot_products.values()))
                 sim_alloc = allocations["__SIMULATION__"]
                 
                 # Stocker dans le session_state
@@ -263,7 +292,7 @@ def buyer_app():
         
                 recs = simulate_optimal_bid(
                     st.session_state.buyers,  # on simule l'impact sur les autres acheteurs réels
-                    list(products.values()),
+                    list(lot_products.values()),
                     user_qtys=user_qtys,
                     user_prices=user_prices,
                     new_buyer_name="__SIMULATION__"
@@ -298,16 +327,16 @@ def buyer_app():
                         b["auto_bid"] = True
         
             # 2️⃣ AUTO-BID (formation des prix)
-            st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers,list(products.values()))
+            st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(lot_products.values()))
+
+
         
             # 3️⃣ SOLVEUR (allocation finale)
-            allocations, _ = solve_model(
-                st.session_state.buyers,
-                list(products.values())
-            )
+            allocations, _ = solve_model(st.session_state.buyers, list(lot_products.values()))
+          
         
             # 4️⃣ SAUVEGARDE HISTORIQUE FINAL dans le tableau JSON
-            save_final_allocations(st.session_state.buyers, allocations)
+            save_final_allocations(st.session_state.buyers,allocations,lot_id)
         
             # 5️⃣ AFFICHAGE POUR L’ACHETEUR COURANT
             buyer_alloc = allocations.get(buyer_id, {})
