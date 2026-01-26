@@ -264,12 +264,12 @@ def buyer_app():
                 buyers_copy_lot = []
                 for b in buyers_copy:
                     filtered_products = {pid: p for pid, p in b["products"].items() if pid in lot_products}
-                        if filtered_products:  # ignorer si aucun produit pour ce lot
-                            buyers_copy_lot.append({
-                            "name": b["name"],
-                            "auto_bid": b.get("auto_bid", False),
-                            "products": filtered_products
-                        })
+                    if filtered_products:  # ignorer si aucun produit pour ce lot
+                        buyers_copy_lot.append({
+                        "name": b["name"],
+                        "auto_bid": b.get("auto_bid", False),
+                        "products": filtered_products
+                    })
 
                 buyers_simulated = run_auto_bid_aggressive(buyers_copy_lot, list(lot_products.values()), max_rounds=30)
 
@@ -354,10 +354,20 @@ def buyer_app():
                     if b["name"] == buyer_id:
                         b["products"] = copy.deepcopy(draft_products)
                         b["auto_bid"] = True
-        
-            # 2️⃣ AUTO-BID (formation des prix)
-            st.session_state.buyers = run_auto_bid_aggressive(st.session_state.buyers, list(lot_products.values()))
 
+            # 2️⃣ AUTO-BID (formation des prix)
+            # Filtrer les produits pour ne garder que ceux du lot courant
+            buyers_for_lot = []
+            for b in st.session_state.buyers:
+                filtered_products = {pid: p for pid, p in b["products"].items() if pid in lot_products}
+                if filtered_products:  # ignorer si aucun produit pour ce lot
+                    buyers_for_lot.append({
+                        "name": b["name"],
+                        "auto_bid": b.get("auto_bid", False),
+                        "products": filtered_products
+                    })
+            
+            st.session_state.buyers = run_auto_bid_aggressive(buyers_for_lot, list(lot_products.values()))
 
         
             # 3️⃣ SOLVEUR (allocation finale)
