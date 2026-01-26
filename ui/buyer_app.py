@@ -260,11 +260,19 @@ def buyer_app():
                 buyers_copy.append(temp_buyer)
 
                 # Lancer auto-bid
-                buyers_simulated = run_auto_bid_aggressive(buyers_copy, list(lot_products.values()), max_rounds=30)
+                # Pour chaque buyer, ne garder que les produits du lot courant
+                buyers_copy_lot = []
+                for b in buyers_copy:
+                    filtered_products = {pid: p for pid, p in b["products"].items() if pid in lot_products}
+                        if filtered_products:  # ignorer si aucun produit pour ce lot
+                            buyers_copy_lot.append({
+                            "name": b["name"],
+                            "auto_bid": b.get("auto_bid", False),
+                            "products": filtered_products
+                        })
 
-        
-                # Lancer auto-bid sur copie
-                buyers_simulated = run_auto_bid_aggressive(buyers_copy, list(lot_products.values()), max_rounds=30)
+                buyers_simulated = run_auto_bid_aggressive(buyers_copy_lot, list(lot_products.values()), max_rounds=30)
+
                 
     
                 # Récupérer allocations simulées
