@@ -6,6 +6,7 @@
     "volume_multiple": 10,
     "starting_price": 5.0,
     "seller_moq": 50,
+    "shelf_life":"15.02.2026",
     "bids": {}
   },
   "P2": {
@@ -15,6 +16,7 @@
     "volume_multiple": 20,
     "starting_price": 10.0,
     "seller_moq": 80,
+    "shelf_life":"20.02.2026",
     "bids": {}
   }
 }
