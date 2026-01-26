@@ -20,6 +20,64 @@ def buyer_app():
         return
     
     st.title("🛒 Dashboard Acheteur")
+        
+    st.subheader("📦 Suivi global de mes lots")
+    
+    history = load_json("bids_history.json")
+    lots = load_json("lots.json")
+    products = load_json("products.json")
+    
+    # Historique de l'acheteur
+    buyer_history = [h for h in history if h["buyer"] == buyer_id]
+    
+    # --- Cas 1 : aucune enchère ---
+    if not buyer_history:
+        st.info(
+            "Vous n’avez encore placé aucune enchère.\n\n"
+            "👉 Sélectionnez un lot ci-dessous pour commencer à enchérir."
+        )
+    else:
+        rows = []
+    
+        # Lots sur lesquels l'acheteur a au moins une enchère
+        buyer_lots = set(h["lot_id"] for h in buyer_history)
+    
+        for lot_id in buyer_lots:
+            lot_name = lots.get(lot_id, {}).get("lot_name", lot_id)
+    
+            lot_hist = [h for h in buyer_history if h["lot_id"] == lot_id]
+    
+            # Dernière enchère du lot
+            latest_ts = max(h["timestamp"] for h in lot_hist)
+            last_round = [h for h in lot_hist if h["timestamp"] == latest_ts]
+    
+            qty_desired = sum(h["qty_desired"] for h in last_round)
+            qty_allocated = sum(h["qty_allocated"] for h in last_round)
+    
+            allocation_rate = (
+                round(qty_allocated / qty_desired * 100, 1)
+                if qty_desired > 0 else 0
+            )
+    
+            if qty_allocated == 0:
+                status = "❌ Aucune allocation"
+            elif qty_allocated < qty_desired:
+                status = "⚠️ Allocation partielle"
+            else:
+                status = "✅ Allocation complète"
+    
+            rows.append({
+                "Lot": lot_name,
+                "Qté demandée": qty_desired,
+                "Qté allouée": qty_allocated,
+                "% allocation": allocation_rate,
+                "Statut": status,
+                "Dernière mise à jour": latest_ts
+            })
+    
+        df = pd.DataFrame(rows).sort_values("Dernière mise à jour", ascending=False)
+    
+        st.dataframe(df, use_container_width=True)
 
     lots = load_json("lots.json")
 
