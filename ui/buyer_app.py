@@ -81,11 +81,17 @@ def buyer_app():
 
     lots = load_json("lots.json")
 
+    lot_options = [""] + list(lots.keys())
+
     lot_id = st.selectbox(
         "📦 Sélectionnez un lot",
-        options=list(lots.keys()),
-        format_func=lambda k: lots[k]["lot_name"]
+        options=lot_options,
+        format_func=lambda k: "— Sélectionner un lot —" if k == "" else lots[k]["lot_name"]
     )
+
+    if not lot_id:
+        st.info("👆 Sélectionnez un lot pour afficher les produits et enchères.")
+        st.stop()
 
     # Récupérer le seller pour ce lot
     seller_id = lots[lot_id].get("seller_id", None)
