@@ -150,9 +150,7 @@ def buyer_app():
     
         # Infos produit
         with col_info:
-            st.markdown(f"Stock: {p['stock']}")
-            st.markdown(f"MOQ: {p['seller_moq']}")
-            st.markdown(f"Multiple: {p['volume_multiple']}"
+            st.markdown(f"Stock: {p['stock']}"
             )
     
         # Prix max
@@ -179,7 +177,7 @@ def buyer_app():
                 value=default_qty,
                 key=f"qty_{pid}"
             )
-            #st.caption(f"Min: {p['seller_moq']} | Max: {p['stock']} | Multiple: {p['volume_multiple']}")
+            st.caption(f"Min: {p['seller_moq']} | Multiple: {p['volume_multiple']}")
     
         # Vérification du multiple
         if qty % p["volume_multiple"] != 0:
