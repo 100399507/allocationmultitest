@@ -319,14 +319,34 @@ def buyer_app():
                 user_qtys = {pid: prod["qty_desired"] for pid, prod in draft_products.items()}
                 user_prices = {pid: prod["current_price"] for pid, prod in draft_products.items()}
         
+                
+                # Filtrer les buyers pour ne garder que les produits du lot courant
+                buyers_copy_lot = []
+                for b in st.session_state.buyers:
+                    filtered_products = {pid: p for pid, p in b["products"].items() if pid in lot_products}
+                    if filtered_products:
+                        buyers_copy_lot.append({
+                            "name": b["name"],
+                            "auto_bid": b.get("auto_bid", False),
+                            "products": filtered_products
+                        })
+                
+                # Ajouter le buyer temporaire pour la simulation
+                buyers_copy_lot.append({
+                    "name": "__SIMULATION__",
+                    "auto_bid": True,
+                    "products": copy.deepcopy(draft_products)
+                })
+                
+                # Appel à la recommandation
                 recs = simulate_optimal_bid(
-                    st.session_state.buyers,  # on simule l'impact sur les autres acheteurs réels
+                    buyers_copy_lot,
                     list(lot_products.values()),
-                    user_qtys=user_qtys,
-                    user_prices=user_prices,
+                    user_qtys={pid: prod["qty_desired"] for pid, prod in draft_products.items()},
+                    user_prices={pid: prod["current_price"] for pid, prod in draft_products.items()},
                     new_buyer_name="__SIMULATION__"
                 )
-        
+
                 rec_rows = []
                 for pid, rec in recs.items():
                     rec_rows.append({
