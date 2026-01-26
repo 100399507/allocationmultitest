@@ -106,7 +106,6 @@ def buyer_app():
     
     # --- Récupérer les dernières valeurs de l'acheteur si existantes ---
     last_qty = {}
-    last_price = {}
     if buyer_history:
         df_buyer = (
             pd.DataFrame(buyer_history)
@@ -117,7 +116,6 @@ def buyer_app():
         )
         for _, row in df_buyer.iterrows():
             last_qty[row["product"]] = row["qty_desired"]
-            last_price[row["product"]] = row["max_price"]
     
     # --- Boucle affichage produits avec inputs sur la même ligne ---
     draft_products = {}
@@ -156,12 +154,10 @@ def buyer_app():
         # Prix max
         with col_price:
             starting_price = current_prices[pid]
-            default_price = last_price.get(pid, starting_price)
             max_price = st.number_input(
                 "",
-                min_value=default_price,
+                min_value=starting_price,
                 step=0.5,
-                value=default_price,
                 key=f"max_{pid}"
             )
             st.caption(f"Prix min: {starting_price:.2f} €")
