@@ -7,37 +7,40 @@ def seller_app():
 
     products = load_json("products.json")
     history = load_json("bids_history.json")
+    lots = load_json("lots.json")
 
-    if not history:
-        
-        # -----------------------------
-        # Cadre récapitulatif des produits
-        # -----------------------------
-        with st.expander("📝 Informations sur les produits (cliquer pour afficher)"):
-        
-            product_summary = []
-            for pid, p in products.items():
-                product_summary.append({
-                    "Produit": p["name"],
-                    "Stock total": p["stock"],
-                    "MOQ": p["seller_moq"],
-                    "Volume multiple": p["volume_multiple"],
-                    "Prix de départ (€)": round(p["starting_price"])
-                })
-            
-            st.table(pd.DataFrame(product_summary))
-            st.info("Minimum de commande total = 80")
-        
-        st.info("Aucune enchère dans l'historique")
+    # -----------------------------
+    # Saisir buyer_name
+    # -----------------------------
+    buyer_name = st.text_input("Votre identifiant vendeur/acheteur (confidentiel)")
+    if not buyer_name:
+        st.info("Veuillez saisir votre identifiant pour accéder à votre espace.")
         return
+
+    # -----------------------------
+    # Identifier les lots où ce buyer a des enchères
+    # -----------------------------
+    buyer_lots = {h["lot_id"] for h in history if h["buyer"] == buyer_name}
+    if not buyer_lots:
+        st.info("Vous n'avez aucune enchère enregistrée pour le moment.")
+        return
+
+    # Sélection du lot
+    lot_id = st.selectbox(
+        "📦 Sélectionnez un lot",
+        options=list(buyer_lots),
+        format_func=lambda k: lots[k]["lot_name"]
+    )
+
+    # Produits du lot sélectionné
+    lot_products = {pid: p for pid, p in products.items() if p["lot_id"] == lot_id}
 
     # -----------------------------
     # Cadre récapitulatif des produits
     # -----------------------------
     with st.expander("📝 Informations sur les produits (cliquer pour afficher)"):
-    
         product_summary = []
-        for pid, p in products.items():
+        for pid, p in lot_products.items():
             product_summary.append({
                 "Produit": p["name"],
                 "Stock total": p["stock"],
@@ -45,67 +48,48 @@ def seller_app():
                 "Volume multiple": p["volume_multiple"],
                 "Prix de départ (€)": round(p["starting_price"])
             })
-        
-        st.table(pd.DataFrame(product_summary))  
-
-    st.markdown("---")  # séparateur visuel
-
+        st.table(pd.DataFrame(product_summary))
 
     # -----------------------------
-    # Calculer le CA global avant affichage
+    # Chiffre d'affaires total pour ce lot
     # -----------------------------
-    total_ca_all_products = 0
-    for pid, p in products.items():
+    total_ca = 0
+    for pid, p in lot_products.items():
         product_history = [h for h in history if h["product"] == pid]
         if product_history:
             latest_time = max(h["timestamp"] for h in product_history)
-            last_allocations = [
-                h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0
-            ]
+            last_allocations = [h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0]
             for h in last_allocations:
-                total_ca_all_products += h["final_price"] * h["qty_allocated"]
+                total_ca += h["final_price"] * h["qty_allocated"]
+
+    st.markdown(f"## 💵 Chiffre d'affaires total pour ce lot : {total_ca:.2f} €")
+    st.markdown("---")
 
     # -----------------------------
-    # Afficher le CA global en haut
+    # Évolution du chiffre d'affaires
     # -----------------------------
-    st.markdown(f"## 💵 Chiffre d'affaires total : {total_ca_all_products:.2f} €")
-    st.markdown("---")  # séparateur visuel
+    with st.expander("📈 Évolution du chiffre d'affaires (lot sélectionné)"):
+        df = pd.DataFrame([h for h in history if h["lot_id"] == lot_id])
+        if not df.empty:
+            df["ca"] = df["final_price"] * df["qty_allocated"]
+            df_ca_global = df.groupby("timestamp")["ca"].sum().reset_index()
+            df_ca_global = df_ca_global.sort_values("timestamp")
+            df_ca_global["short_date"] = pd.to_datetime(df_ca_global["timestamp"]).dt.strftime("%d/%m %H:%M")
+            st.dataframe(df_ca_global)
+            st.line_chart(df_ca_global.set_index("short_date")["ca"])
+        else:
+            st.info("Aucune enchère pour ce lot pour le moment.")
 
     # -----------------------------
-    # Affichage du chiffre d'affaires global
+    # Enchères en cours pour le lot
     # -----------------------------
-    with st.expander("📈 Évolution du chiffre d'affaires global  (cliquer pour afficher)"):
-        df = pd.DataFrame(history)
-    
-        # Calcul du chiffre d'affaires par ligne
-        df["ca"] = df["final_price"] * df["qty_allocated"]
-    
-        # Grouper par timestamp pour obtenir le CA global par round
-        df_ca_global = df.groupby("timestamp")["ca"].sum().reset_index()
-        df_ca_global = df_ca_global.sort_values("timestamp")
-    
-        # Raccourcir la date pour lisibilité
-        df_ca_global["short_date"] = pd.to_datetime(df_ca_global["timestamp"]).dt.strftime("%d/%m %H:%M")
-    
-        # Afficher le tableau
-        #st.subheader("📈 Évolution du chiffre d'affaires global (tous produits)")
-        st.dataframe(df_ca_global)
-    
-        # Option : afficher un graphique
-        st.line_chart(df_ca_global.set_index("short_date")["ca"])
-
-   # -----------------------------
-    # Enchères en cours : tous produits
-    # -----------------------------
-    st.subheader("**📊 Enchères en cours (tous produits)**")
+    st.subheader("**📊 Enchères en cours (lot sélectionné)**")
     rows = []
-    for pid, p in products.items():
+    for pid, p in lot_products.items():
         product_history = [h for h in history if h["product"] == pid]
         if product_history:
             latest_time = max(h["timestamp"] for h in product_history)
-            last_allocations = [
-                h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0
-            ]
+            last_allocations = [h for h in product_history if h["timestamp"] == latest_time and h["qty_allocated"] > 0]
             for h in last_allocations:
                 rows.append({
                     "Produit": p["name"],
@@ -120,14 +104,14 @@ def seller_app():
     if rows:
         st.dataframe(pd.DataFrame(rows))
     else:
-        st.info("Aucun acheteur avec allocation pour le moment")
+        st.info("Aucune enchère allouée pour ce lot pour le moment.")
 
     # -----------------------------
-    # Historique complet : tous produits
+    # Historique complet pour le lot
     # -----------------------------
-    with st.expander("📜 Historique complet des enchères (tous produits)"):
+    with st.expander("📜 Historique complet des enchères (lot sélectionné)"):
         hist_rows = []
-        for pid, p in products.items():
+        for pid, p in lot_products.items():
             product_history = [h for h in history if h["product"] == pid]
             for h in product_history:
                 hist_rows.append({
@@ -143,4 +127,4 @@ def seller_app():
         if hist_rows:
             st.dataframe(pd.DataFrame(hist_rows))
         else:
-            st.info("Aucun historique d'enchères")
+            st.info("Aucun historique d'enchères pour ce lot.")
