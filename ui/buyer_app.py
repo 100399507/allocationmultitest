@@ -123,6 +123,23 @@ def buyer_app():
     draft_products = {}
     total_qty_desired = 0
     valid_input = True
+
+        # ---- En-tête du tableau ----
+    col_name_h, col_info_h, col_price_h, col_qty_h = st.columns([2, 2, 1.5, 1.5])
+    
+    with col_name_h:
+        st.markdown("**Produit**")
+    
+    with col_info_h:
+        st.markdown("**Informations**")
+    
+    with col_price_h:
+        st.markdown("**Prix max (€)**")
+    
+    with col_qty_h:
+        st.markdown("**Quantité désirée**")
+    
+    st.divider()  # optionnel, pour séparer visuellement
     
     for pid, p in products.items():
         col_name, col_info, col_price, col_qty = st.columns([2, 2, 1.5, 1.5])
