@@ -134,7 +134,7 @@ def buyer_app():
         # Infos produit
         with col_info:
             st.markdown(
-                f"Stock: {p['stock']} | MOQ: {p['seller_moq']} | Multiple: {p['volume_multiple']}"
+                f"Stock: {p['stock']} MOQ: {p['seller_moq']} Multiple: {p['volume_multiple']}"
             )
     
         # Prix max
