@@ -246,6 +246,10 @@ def buyer_app():
             else:
                 # Copier les acheteurs existants pour ne pas toucher aux originaux
                 buyers_copy = copy.deepcopy(st.session_state.buyers)
+
+                # Filtrer les produits pour ne garder que ceux du lot courant
+                for buyer in buyers_copy:
+                    buyer["products"] = {pid: prod for pid, prod in buyer["products"].items() if pid in lot_products}
         
                 # Créer un buyer temporaire pour simulation uniquement
                 temp_buyer = {
@@ -254,6 +258,10 @@ def buyer_app():
                     "products": copy.deepcopy(draft_products)
                 }
                 buyers_copy.append(temp_buyer)
+
+                # Lancer auto-bid
+                buyers_simulated = run_auto_bid_aggressive(buyers_copy, list(lot_products.values()), max_rounds=30)
+
         
                 # Lancer auto-bid sur copie
                 buyers_simulated = run_auto_bid_aggressive(buyers_copy, list(lot_products.values()), max_rounds=30)
