@@ -270,7 +270,14 @@ def buyer_app():
                 # Affichage allocations simulées
                 if st.session_state.sim_alloc:
                     sim_rows = []
+                    total_desired_sim = 0
+                    total_allocated_sim = 0
                     for pid, prod in draft_products.items():
+                        qty_desired = prod["qty_desired"]
+                        qty_allocated = st.session_state.sim_alloc.get(pid, 0)
+                        total_desired_sim += qty_desired
+                        total_allocated_sim += qty_allocated
+                        
                         sim_rows.append({
                             "Produit": products[pid]["name"],
                             "Qté désirée": prod["qty_desired"],
@@ -278,6 +285,12 @@ def buyer_app():
                             "Prix courant simulé (€)": buyers_simulated[-1]["products"][pid]["current_price"],
                             "Prix max (€)": prod["max_price"]
                         })
+
+                # --- Nouveau bloc pour alerter visuellement ---
+                if total_allocated_sim >= total_desired_sim and total_desired_sim > 0:
+                    st.success(f"✅ Simulation : Allocation complète ({total_allocated_sim}/{total_desired_sim})")
+                else:
+                    st.warning(f"⚠️ Simulation : Allocation partielle ({total_allocated_sim}/{total_desired_sim})")
                 
                 st.subheader("🧪 Résultat simulation allocation")
                 st.dataframe(sim_rows)
