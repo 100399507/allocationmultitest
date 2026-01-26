@@ -40,7 +40,8 @@ def buyer_app():
     ]
     
     st.subheader("📊 Suivi de mon enchère")
-    
+
+    fully_allocated = False
     if not buyer_history:
         st.info(
             "Vous n'avez encore placé aucune enchère.\n\n"
@@ -81,8 +82,8 @@ def buyer_app():
         fully_allocated = total_allocated >= total_desired and total_desired > 0
     
         if fully_allocated:
-                st.success("✅ Vous êtes actuellement alloué à 100 % sur vos produits.")
-        else 
+            st.success("✅ Vous êtes actuellement alloué à 100 % sur vos produits.")
+        else:
             st.warning(
             f"⚠️ Allocation partielle : {total_allocated} / {total_desired} unités allouées.\n\n"
             "💡 Vous pouvez modifier votre prix max ou vos quantités et relancer une simulation."
@@ -125,7 +126,7 @@ def buyer_app():
         total_qty_desired = 0
         valid_input = True
     
-            # ---- En-tête du tableau ----
+        # ---- En-tête du tableau ----
         col_name_h, col_info_h, col_price_h, col_qty_h = st.columns([2, 2, 1.5, 1.5])
         
         with col_name_h:
