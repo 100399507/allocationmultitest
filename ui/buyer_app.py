@@ -22,7 +22,6 @@ def buyer_app():
     st.title("🛒 Dashboard Acheteur")
 
     lots = load_json("lots.json")
-    st.write(lots)
 
     lot_id = st.selectbox(
         "📦 Sélectionnez un lot",
