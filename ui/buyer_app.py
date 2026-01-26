@@ -238,7 +238,7 @@ def buyer_app():
                 sim_rows = []
                 for pid, prod in draft_products.items():
                     sim_rows.append({
-                        "Produit": pid["name"],
+                        "Produit": products[pid]["name"],
                         "Qté désirée": prod["qty_desired"],
                         "Qté allouée": st.session_state.sim_alloc.get(pid, 0),
                         "Prix courant simulé (€)": buyers_simulated[-1]["products"][pid]["current_price"],
