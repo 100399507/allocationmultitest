@@ -1,7 +1,7 @@
 from datetime import datetime
 from services.state_manager import load_json, save_json
 
-def save_final_allocations(buyers, allocations, lot_id):
+def save_final_allocations(buyers, allocations, lot_id, seller_id)
     history = load_json("bids_history.json")
     now = datetime.utcnow().isoformat()
 
@@ -13,6 +13,7 @@ def save_final_allocations(buyers, allocations, lot_id):
             history.append({
                 "buyer": buyer_name,
                 "lot_id" : lot_id,
+                "seller_id": seller_id,
                 "product": pid,
                 "qty_desired": prod["qty_desired"],
                 "qty_allocated": buyer_alloc.get(pid, 0),
