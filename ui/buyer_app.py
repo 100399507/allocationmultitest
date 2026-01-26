@@ -149,7 +149,7 @@ def buyer_app():
         # Infos produit
         with col_info:
             st.markdown(f"Stock: {p['stock']}")
-            st.markdown(f"Date d'exp :  {p['shelf_life']}")
+            st.markdown(f"Exp :  {p['shelf_life']}")
             
     
         # Prix max
