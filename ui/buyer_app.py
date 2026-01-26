@@ -159,7 +159,7 @@ def buyer_app():
             default_price = last_price.get(pid, starting_price)
             max_price = st.number_input(
                 "",
-                min_value=starting_price,
+                min_value=default_price,
                 step=0.5,
                 value=default_price,
                 key=f"max_{pid}"
