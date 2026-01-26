@@ -6,7 +6,8 @@
     "volume_multiple": 10,
     "starting_price": 5.0,
     "seller_moq": 50,
-    "shelf_life":"15.02.2026"
+    "shelf_life":"15.02.2026",
+    "lot_id": "lot_1"
   },
   "P2": {
     "id": "P2",
@@ -15,6 +16,37 @@
     "volume_multiple": 20,
     "starting_price": 10.0,
     "seller_moq": 80,
-    "shelf_life":"20.02.2026"
+    "shelf_life":"20.02.2026",
+    "lot_id": "lot_1"
+  },
+  "P3": {
+    "id": "P3",
+    "name": "Danonino 4X85G",
+    "stock": 250,
+    "volume_multiple": 20,
+    "starting_price": 8.0,
+    "seller_moq": 50,
+    "shelf_life":"08.02.2026",
+    "lot_id": "lot_1"
+  },
+  "P4": {
+    "id": "P4",
+    "name": "Bières Heineken 12x25CL",
+    "stock": 400,
+    "volume_multiple": 10,
+    "starting_price": 20.0,
+    "seller_moq":100,
+    "shelf_life":"15.06.2026",
+    "lot_id": "lot_2"
+  },
+  "P5": {
+    "id": "P5",
+    "name": "Bières Heineken 6x25CL",
+    "stock": 1000,
+    "volume_multiple": 100,
+    "starting_price": 7.0,
+    "seller_moq": 200,
+    "shelf_life":"18.05.2026",
+    "lot_id": "lot_2"
   }
 }
