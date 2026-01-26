@@ -25,7 +25,7 @@
     "stock": 250,
     "volume_multiple": 20,
     "starting_price": 8.0,
-    "seller_moq": 50,
+    "seller_moq": 60,
     "shelf_life":"08.02.2026",
     "lot_id": "lot_1"
   },
