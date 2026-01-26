@@ -159,6 +159,7 @@ def buyer_app():
             starting_price = current_prices[pid]
             default_price = last_price.get(pid, starting_price)
             max_price = st.number_input(
+                "",
                 min_value=starting_price,
                 step=0.5,
                 value=default_price,
@@ -170,6 +171,7 @@ def buyer_app():
         with col_qty:
             default_qty = last_qty.get(pid, p["seller_moq"])
             qty = st.number_input(
+                "",
                 min_value=p["seller_moq"],
                 max_value=p["stock"],
                 step=p["volume_multiple"],
