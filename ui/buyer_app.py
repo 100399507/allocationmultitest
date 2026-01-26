@@ -28,6 +28,11 @@ def buyer_app():
         options=list(lots.keys()),
         format_func=lambda k: lots[k]["lot_name"]
     )
+
+    # Récupérer le seller pour ce lot
+    seller_id = lots[lot_id].get("seller_id", None)
+    if not seller_id:
+        st.warning("Ce lot n'a pas de seller_id défini !")
     
     if not lot_id:
         st.stop()
@@ -395,7 +400,7 @@ def buyer_app():
           
         
             # 4️⃣ SAUVEGARDE HISTORIQUE FINAL dans le tableau JSON
-            save_final_allocations(st.session_state.buyers,allocations,lot_id)
+            save_final_allocations(st.session_state.buyers,allocations,lot_id,seller_id)
         
             # 5️⃣ AFFICHAGE POUR L’ACHETEUR COURANT
             buyer_alloc = allocations.get(buyer_id, {})
