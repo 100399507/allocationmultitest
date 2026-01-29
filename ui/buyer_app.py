@@ -299,132 +299,157 @@ def buyer_app():
             st.warning(f"La quantité totale demandée ({total_qty_desired}) doit être ≥ au MOQ global ({GLOBAL_MOQ}).")
             valid_input = False
     
-    
-    
         # -----------------------------
-        # Bouton simulation + recommandation
+        # Bouton simulation + recommandation (PERSISTANT)
         # -----------------------------
         
-        #Passage par un state, sinon rerun et le bouton disparait
+        # Initialisation du state (UNE FOIS)
         if "sim_alloc" not in st.session_state:
-            st.session_state.sim_alloc = {}  # dictionnaire vide au départ
-    
-        if st.button("🧪 Simuler mon allocation et recommandation", disabled=not valid_input):
-            if not buyer_id:
-                st.warning("Renseigne d'abord ton identifiant acheteur")
-            else:
-                # Copier les acheteurs existants pour ne pas toucher aux originaux
-                buyers_copy = copy.deepcopy(st.session_state.buyers)
-
-                # Filtrer les produits pour ne garder que ceux du lot courant
-                for buyer in buyers_copy:
-                    buyer["products"] = {pid: prod for pid, prod in buyer["products"].items() if pid in lot_products}
+            st.session_state.sim_alloc = None
+            st.session_state.sim_rows = None
+            st.session_state.sim_summary = None
+            st.session_state.sim_prices = None
         
-                # Créer un buyer temporaire pour simulation uniquement
-                temp_buyer = {
-                    "name": "__SIMULATION__",
-                    "auto_bid": True,
-                    "products": copy.deepcopy(draft_products)
+        # ---------- BOUTON = CALCUL UNIQUEMENT ----------
+        if st.button("🧪 Simuler mon allocation et recommandation", disabled=not valid_input):
+        
+            # Copier les acheteurs existants
+            buyers_copy = copy.deepcopy(st.session_state.buyers)
+        
+            # Filtrer les produits du lot courant
+            for buyer in buyers_copy:
+                buyer["products"] = {
+                    pid: prod for pid, prod in buyer["products"].items()
+                    if pid in lot_products
                 }
-                buyers_copy.append(temp_buyer)
-
-                # Lancer auto-bid
-                # Pour chaque buyer, ne garder que les produits du lot courant
-                buyers_copy_lot = []
-                for b in buyers_copy:
-                    filtered_products = {pid: p for pid, p in b["products"].items() if pid in lot_products}
-                    if filtered_products:  # ignorer si aucun produit pour ce lot
-                        buyers_copy_lot.append({
+        
+            # Buyer temporaire
+            temp_buyer = {
+                "name": "__SIMULATION__",
+                "auto_bid": True,
+                "products": copy.deepcopy(draft_products)
+            }
+            buyers_copy.append(temp_buyer)
+        
+            # Ne garder que les buyers ayant des produits sur ce lot
+            buyers_copy_lot = []
+            for b in buyers_copy:
+                filtered_products = {
+                    pid: p for pid, p in b["products"].items()
+                    if pid in lot_products
+                }
+                if filtered_products:
+                    buyers_copy_lot.append({
                         "name": b["name"],
                         "auto_bid": b.get("auto_bid", False),
                         "products": filtered_products
                     })
-
-                buyers_simulated = run_auto_bid_aggressive(buyers_copy_lot, list(lot_products.values()), max_rounds=30)
-
-                
-    
-                # Récupérer allocations simulées
-                allocations, _ = solve_model(buyers_simulated, list(lot_products.values()))
-                sim_alloc = allocations["__SIMULATION__"]
-                
-                # Stocker dans le session_state
-                st.session_state.sim_alloc = sim_alloc
-    
         
-                # Affichage allocations simulées
-                if st.session_state.sim_alloc:
-                    sim_rows = []
-                    total_desired_sim = 0
-                    total_allocated_sim = 0
-                    for pid, prod in draft_products.items():
-                        qty_desired = prod["qty_desired"]
-                        qty_allocated = st.session_state.sim_alloc.get(pid, 0)
-                        total_desired_sim += qty_desired
-                        total_allocated_sim += qty_allocated
-                        
-                        sim_rows.append({
-                            "Produit": products[pid]["name"],
-                            "Qté désirée": prod["qty_desired"],
-                            "Qté allouée": st.session_state.sim_alloc.get(pid, 0),
-                            "Prix courant simulé (€)": buyers_simulated[-1]["products"][pid]["current_price"],
-                            "Prix max (€)": prod["max_price"]
-                        })
-
-                # --- Nouveau bloc pour alerter visuellement ---
-                if total_allocated_sim >= total_desired_sim and total_desired_sim > 0:
-                    st.success(f"✅ Simulation : Allocation complète ({total_allocated_sim}/{total_desired_sim})")
-                else:
-                    st.warning(f"⚠️ Simulation : Allocation partielle ({total_allocated_sim}/{total_desired_sim})")
-                
-                st.subheader("🧪 Résultat simulation allocation")
-                st.dataframe(sim_rows)
+            # AUTO-BID
+            buyers_simulated = run_auto_bid_aggressive(
+                buyers_copy_lot,
+                list(lot_products.values()),
+                max_rounds=30
+            )
         
-                # -----------------------------
-                # Recommandations prix pour obtenir 100% du stock
-                # -----------------------------
-                from core.recommendation import simulate_optimal_bid
+            # SOLVEUR
+            allocations, _ = solve_model(
+                buyers_simulated,
+                list(lot_products.values())
+            )
         
-                user_qtys = {pid: prod["qty_desired"] for pid, prod in draft_products.items()}
-                user_prices = {pid: prod["current_price"] for pid, prod in draft_products.items()}
+            sim_alloc = allocations.get("__SIMULATION__", {})
         
-                
-                # Filtrer les buyers pour ne garder que les produits du lot courant
-                buyers_copy_lot = []
-                for b in st.session_state.buyers:
-                    filtered_products = {pid: p for pid, p in b["products"].items() if pid in lot_products}
-                    if filtered_products:
-                        buyers_copy_lot.append({
-                            "name": b["name"],
-                            "auto_bid": b.get("auto_bid", False),
-                            "products": filtered_products
-                        })
-                
-                # Ajouter le buyer temporaire pour la simulation
-                buyers_copy_lot.append({
-                    "name": "__SIMULATION__",
-                    "auto_bid": True,
-                    "products": copy.deepcopy(draft_products)
+            # ---------- STOCKAGE RESULTATS ----------
+            sim_rows = []
+            total_desired_sim = 0
+            total_allocated_sim = 0
+        
+            for pid, prod in draft_products.items():
+                qty_desired = prod["qty_desired"]
+                qty_allocated = sim_alloc.get(pid, 0)
+        
+                total_desired_sim += qty_desired
+                total_allocated_sim += qty_allocated
+        
+                sim_rows.append({
+                    "Produit": products[pid]["name"],
+                    "Qté désirée": qty_desired,
+                    "Qté allouée": qty_allocated,
+                    "Prix courant simulé (€)": buyers_simulated[-1]["products"][pid]["current_price"],
+                    "Prix max (€)": prod["max_price"]
                 })
-                
-                # Appel à la recommandation
-                recs = simulate_optimal_bid(
-                    buyers_copy_lot,
-                    list(lot_products.values()),
-                    user_qtys={pid: prod["qty_desired"] for pid, prod in draft_products.items()},
-                    user_prices={pid: prod["current_price"] for pid, prod in draft_products.items()},
-                    new_buyer_name="__SIMULATION__"
-                )
-
-                rec_rows = []
-                for pid, rec in recs.items():
-                    rec_rows.append({
-                        "Produit": products[pid]["name"],
-                        "Prix recommandé pour 100% allocation (€)": rec["recommended_price"]
+        
+            st.session_state.sim_alloc = sim_alloc
+            st.session_state.sim_rows = sim_rows
+            st.session_state.sim_summary = {
+                "desired": total_desired_sim,
+                "allocated": total_allocated_sim
+            }
+        
+            # ---------- RECOMMANDATION PRIX ----------
+            from core.recommendation import simulate_optimal_bid
+        
+            buyers_copy_lot = []
+            for b in st.session_state.buyers:
+                filtered_products = {
+                    pid: p for pid, p in b["products"].items()
+                    if pid in lot_products
+                }
+                if filtered_products:
+                    buyers_copy_lot.append({
+                        "name": b["name"],
+                        "auto_bid": b.get("auto_bid", False),
+                        "products": filtered_products
                     })
         
-                st.subheader("💡 Recommandation prix pour obtenir 100% du stock")
-                st.dataframe(rec_rows)
+            buyers_copy_lot.append({
+                "name": "__SIMULATION__",
+                "auto_bid": True,
+                "products": copy.deepcopy(draft_products)
+            })
+        
+            recs = simulate_optimal_bid(
+                buyers_copy_lot,
+                list(lot_products.values()),
+                user_qtys={pid: prod["qty_desired"] for pid, prod in draft_products.items()},
+                user_prices={pid: prod["current_price"] for pid, prod in draft_products.items()},
+                new_buyer_name="__SIMULATION__"
+            )
+        
+            rec_rows = []
+            for pid, rec in recs.items():
+                rec_rows.append({
+                    "Produit": products[pid]["name"],
+                    "Prix recommandé pour 100% allocation (€)": rec["recommended_price"]
+                })
+        
+            st.session_state.sim_prices = rec_rows
+        
+        
+        # ---------- AFFICHAGE PERSISTANT ----------
+        if st.session_state.sim_alloc:
+        
+            desired = st.session_state.sim_summary["desired"]
+            allocated = st.session_state.sim_summary["allocated"]
+        
+            if allocated >= desired and desired > 0:
+                st.success(f"✅ Simulation : Allocation complète ({allocated}/{desired})")
+            else:
+                st.warning(f"⚠️ Simulation : Allocation partielle ({allocated}/{desired})")
+        
+            st.subheader("🧪 Résultat simulation allocation")
+            st.dataframe(
+                st.session_state.sim_rows,
+                use_container_width=True
+            )
+        
+            st.subheader("💡 Recommandation prix pour obtenir 100% du stock")
+            st.dataframe(
+                st.session_state.sim_prices,
+                use_container_width=True
+            )
+        
                 
         # -----------------------------
         # Bouton pour valider l'enchère
