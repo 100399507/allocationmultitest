@@ -428,7 +428,7 @@ def buyer_app():
         
         
         # ---------- AFFICHAGE PERSISTANT ----------
-        if st.session_state.sim_alloc:
+        if ("sim_alloc" in st.session_state and st.session_state.sim_alloc is not None and "sim_summary" in st.session_state and st.session_state.sim_summary is not None):
         
             desired = st.session_state.sim_summary["desired"]
             allocated = st.session_state.sim_summary["allocated"]
