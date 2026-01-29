@@ -424,9 +424,11 @@ def buyer_app():
         
         # ---------- AFFICHAGE (hors bouton, persistant) ----------
         if (
-            st.session_state.sim_alloc is not None
-            and st.session_state.sim_rows is not None
-            and st.session_state.sim_rec_rows is not None
+            "sim_alloc" in st.session_state
+            and "sim_rows" in st.session_state
+            and "sim_rec_rows" in st.session_state
+            and "sim_totals" in st.session_state
+            and st.session_state.sim_alloc is not None
         ):
         
             desired = st.session_state.sim_totals["desired"]
@@ -438,10 +440,17 @@ def buyer_app():
                 st.warning(f"⚠️ Simulation : Allocation partielle ({allocated}/{desired})")
         
             st.subheader("🧪 Résultat simulation allocation")
-            st.dataframe(st.session_state.sim_rows, use_container_width=True)
+            st.dataframe(
+                st.session_state.sim_rows,
+                use_container_width=True
+            )
         
             st.subheader("💡 Recommandation prix pour obtenir 100% du stock")
-            st.dataframe(st.session_state.sim_rec_rows, use_container_width=True)
+            st.dataframe(
+                st.session_state.sim_rec_rows,
+                use_container_width=True
+            )
+
 
                 
         # -----------------------------
